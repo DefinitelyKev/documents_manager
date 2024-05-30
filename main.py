@@ -1,2 +1,4 @@
 
 print("lol")
+
+print('Cool')
