@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css" />
+  </head>
+  <body>
+    <h1>Nice</h1>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Modified Time</th>
+          <th>Size</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            {% for name, path in parent_path %}
+            <a href="{{ url_for('index', req_path=path) }}">{{ name }}</a>
+            {% if not loop.last %} / {% endif %} {% endfor %}
+          </td>
+        </tr>
+        {% for file_obj in files %}
+        <tr>
+          <td>
+            <a href="{{ url_for('index', req_path=file_obj['link']) }}">
+              <span><i class="{{file_obj['icon']}}" style="margin-right: 0.3em"></i>{{ file_obj['name'] }}</span>
+            </a>
+          </td>
+          <td>{{ file_obj['mTime'] }}</td>
+          <td>{{ file_obj['size'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+
+  <style>
+    table {
+      table-layout: fixed;
+      width: 100%;
+    }
+    table td,
+    th {
+      word-wrap: break-word;
+    }
+    th {
+      text-align: left;
+    }
+  </style>
+</html>
