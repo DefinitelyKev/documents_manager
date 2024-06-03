@@ -1,15 +1,17 @@
-from flask import Flask, render_template, abort, send_file
+from flask import Flask, render_template, abort, send_file, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from config import Config
 import os
 from datetime import datetime
 from pathlib import Path
+from tkinter import filedialog
+from tkinter import *
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-text_folder_path = os.path.join(basedir, "text")
+chosen_folder_path = basedir
 
 
 def getTimeStampString(t_sec) -> str:
@@ -82,13 +84,26 @@ def getIconClassForFilename(fName):
     return fileIconClass
 
 
-@app.route("/", methods=["GET", "POST"], defaults={"req_path": ""})
-@app.route("/<path:req_path>", methods=["GET", "POST"])
-def index(req_path):
-    abs_path = Path(os.path.join(text_folder_path, req_path))
-    print(abs_path)
+@app.route("/", methods=["GET", "POST"])
+def upload():
+    if request.method == "POST":
+        global chosen_folder_path
+        root = Tk()
+        root.attributes("-topmost", True, "-alpha", 0)
+        file_name = filedialog.askdirectory()
+        root.destroy()
+        del root
+        chosen_folder_path = file_name
+        return redirect(url_for("dir_view"))
+
+    return render_template("upload.html")
+
+
+@app.route("/dir_view/", methods=["GET", "POST"], defaults={"req_path": ""})
+@app.route("/dir_view/<path:req_path>", methods=["GET", "POST"])
+def dir_view(req_path):
+    abs_path = Path(os.path.join(chosen_folder_path, req_path))
     if not os.path.exists(abs_path):
-        print("poo")
         return abort(404)
 
     if os.path.isfile(abs_path):
@@ -104,22 +119,22 @@ def index(req_path):
             "size": f_bytes,
             "mTime": f_time,
             "icon": f_icon,
-            "link": os.path.relpath(x.path, text_folder_path).replace("\\", "/"),
+            "link": os.path.relpath(x.path, chosen_folder_path).replace("\\", "/"),
         }
 
     f_names = [fObj_from_scan(x) for x in os.scandir(abs_path)]
-    parent_path = os.path.relpath(abs_path.parents[0], text_folder_path).replace("\\", "/")
+    dir_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
 
-    directories = parent_path.split("/")
+    directories = dir_path.split("/")
     path_list = []
-    if parent_path not in ["..", "."]:
+    if dir_path not in ["..", "."]:
         path_list.append((".", "."))
 
     for i in range(len(directories)):
         sub_path = "/".join(directories[: i + 1])
         path_list.append((directories[i], sub_path))
 
-    return render_template("index.html", files=f_names, parent_path=path_list)
+    return render_template("dir_view.html", files=f_names, dir_path=path_list)
 
 
 if __name__ == "__main__":

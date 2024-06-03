@@ -9,6 +9,11 @@
   <body>
     <h1>Nice</h1>
 
+    <h3>
+      {% for name, path in dir_path %}
+      <a href="{{ url_for('dir_view', req_path=path) }}">{{ name }}</a>
+      {% if not loop.last %} / {% endif %} {% endfor %}
+    </h3>
     <table>
       <thead>
         <tr>
@@ -18,17 +23,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>
-            {% for name, path in parent_path %}
-            <a href="{{ url_for('index', req_path=path) }}">{{ name }}</a>
-            {% if not loop.last %} / {% endif %} {% endfor %}
-          </td>
-        </tr>
         {% for file_obj in files %}
         <tr>
           <td>
-            <a href="{{ url_for('index', req_path=file_obj['link']) }}">
+            <a href="{{ url_for('dir_view', req_path=file_obj['link']) }}">
               <span><i class="{{file_obj['icon']}}" style="margin-right: 0.3em"></i>{{ file_obj['name'] }}</span>
             </a>
           </td>

@@ -6,12 +6,9 @@
     <title>Document</title>
   </head>
   <body>
-    <h1>Nice</h1>
-
-    {% for title, info in files.items() %}
-    <h1>-----------------</h1>
-    <p>File name: {{ title }}</p>
-    <p>File text: {{ info }}</p>
-    {% endfor %}
+    <h1>Upload</h1>
+    <form method="POST">
+      <input type="submit" value="Select Folder Path" />
+    </form>
   </body>
 </html>
