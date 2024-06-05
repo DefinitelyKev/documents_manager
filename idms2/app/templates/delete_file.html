@@ -1,0 +1,28 @@
+{% extends "base.html" %} {% block content %}
+<div class="column is-8 is-offset-2">
+  <h1 class="title">Delete File by ID</h1>
+  <div class="box">
+    <form method="POST" action="/delete_file">
+      <div class="field">
+        <div class="form-group">
+          <input class="input is-large" type="text" name="deleteInput" placeholder=" " autofocus="" />
+        </div>
+      </div>
+      <button class="button is-block is-info is-large is-fullwidth">Delete</button>
+    </form>
+  </div>
+</div>
+<div class="column is-8 is-offset-2">
+  <h1 class="title">Delete All in Database</h1>
+  <div class="box">
+    <form method="POST" action="/delete_file">
+      <div class="field">
+        <div class="form-group">
+          <input class="input is-large" type="text" name="deleteAllInput" placeholder=" " autofocus="" />
+        </div>
+      </div>
+      <button class="button is-block is-info is-large is-fullwidth">Delete All</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

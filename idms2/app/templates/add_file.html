@@ -13,24 +13,28 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>file_name</th>
-            <th>file_content</th>
-            <th>file_classification</th>
-            <th>file_size</th>
-            <th>tags</th>
+            <th>name</th>
+            <th>content</th>
+            <th>type</th>
+            <th>size</th>
+            <th>abs_path</th>
+            <th>rel_path</th>
             <th>date_modified</th>
+            <th>tags</th>
           </tr>
         </thead>
         <tbody>
           {% for document in documents %}
           <tr>
             <td>{{ document.id }}</td>
-            <td>{{ document.file_name }}</td>
-            <td>{{ document.file_content }}</td>
-            <td>{{ document.file_classification }}</td>
-            <td>{{ document.file_size }}</td>
-            <td>{{ document.tags }}</td>
+            <td>{{ document.name }}</td>
+            <td>{{ document.content }}</td>
+            <td>{{ document.type }}</td>
+            <td>{{ document.size }}</td>
+            <td>{{ document.abs_path }}</td>
+            <td>{{ document.rel_path }}</td>
             <td>{{ document.date_modified }}</td>
+            <td>{{ document.tags }}</td>
           </tr>
           {% endfor %}
         </tbody>

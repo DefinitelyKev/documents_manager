@@ -6,7 +6,7 @@ from tkinter import filedialog
 from tkinter import *
 import os
 
-from app.utils import file_types_list, extract_text
+from app.utils import *
 from app.form import DocumentForm
 from app.models import Document
 from app import app, db
@@ -15,26 +15,50 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 chosen_folder_path = basedir
 
 
-def getTimeStampString(t_sec) -> str:
-    t_obj = datetime.fromtimestamp(t_sec)
-    t_str = datetime.strftime(t_obj, "%Y-%m-%d %H:%M:%S")
-    return t_str
+def getObjFromScan(root, name):
+    abs_path = os.path.join(root, name).replace("\\", "/")
+    stat = os.stat(abs_path)
+    bytes = getReadableByteSize(stat.st_size)
+    m_time = getTimeStampString(stat.st_mtime)
+    rel_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
+    file_type = os.path.splitext(name)[1]
+
+    content = ""
+    try:
+        with open(abs_path, "r", errors="ignore") as file:
+            content = file.read()
+    except Exception as e:
+        print(f"Error reading file {abs_path}: {e}")
+
+    return {
+        "name": name,
+        "content": content,
+        "type": file_type,
+        "size": bytes,
+        "m_time": m_time,
+        "abs_path": abs_path,
+        "rel_path": rel_path,
+    }
 
 
-def getReadableByteSize(num, suffix="B") -> str:
-    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
-        if abs(num) < 1024.0:
-            return "%3.1f%s%s" % (num, unit, suffix)
-        num /= 1024.0
-    return "%.1f%s%s" % (num, "Y", suffix)
+def uploadDocumentsToDb():
+    for root, _, files in os.walk(chosen_folder_path):
+        for file_name in files:
+            file_obj = getObjFromScan(root, file_name)
+            document = Document(
+                name=file_obj["name"],
+                content=file_obj["content"],
+                type=file_obj["type"],
+                size=file_obj["size"],
+                abs_path=file_obj["abs_path"],
+                rel_path=file_obj["rel_path"],
+                date_modified=file_obj["m_time"],
+                tags="None",
+            )
+            db.session.add(document)
+            db.session.commit()
 
-
-def getIconClassForFilename(f_name):
-    file_ext = Path(f_name).suffix
-    file_ext = file_ext[1:] if file_ext.startswith(".") else file_ext
-    file_types = file_types_list
-    file_icon_class = f"bi bi-filetype-{file_ext}" if file_ext in file_types else "bi bi-file-earmark"
-    return file_icon_class
+    flash("Your changes have been saved.")
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -65,24 +89,14 @@ def dir_view(req_path):
             print(text)
         return send_file(abs_path)
 
-    def fObj_from_scan(x):
-        f_icon = "bi bi-folder-fill" if os.path.isdir(x.path) else getIconClassForFilename(x.name)
-        file_stat = x.stat()
-        f_bytes = getReadableByteSize(file_stat.st_size)
-        f_time = getTimeStampString(file_stat.st_mtime)
-        return {
-            "name": x.name,
-            "size": f_bytes,
-            "mTime": f_time,
-            "icon": f_icon,
-            "link": os.path.relpath(x.path, chosen_folder_path).replace("\\", "/"),
-        }
+    file_names = [fileObjFromScan(x) for x in os.scandir(abs_path)]
 
-    f_names = [fObj_from_scan(x) for x in os.scandir(abs_path)]
-    dir_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
+    if abs_path == os.path.join(chosen_folder_path, ""):
+        uploadDocumentsToDb()
 
-    directories = dir_path.split("/")
     path_list = []
+    dir_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
+    directories = dir_path.split("/")
     if dir_path not in ["..", "."]:
         path_list.append((".", "."))
 
@@ -90,7 +104,7 @@ def dir_view(req_path):
         sub_path = "/".join(directories[: i + 1])
         path_list.append((directories[i], sub_path))
 
-    return render_template("dir_view.html", files=f_names, dir_path=path_list)
+    return render_template("dir_view.html", files=file_names, dir_path=path_list)
 
 
 @app.route("/add_file/", methods=["GET", "POST"])
@@ -99,12 +113,14 @@ def add_file():
     documents = Document.query.all()
     if form.validate_on_submit():
         document = Document(
-            file_name=form.file_name.data,
-            file_content=form.file_content.data,
-            file_classification="txt",
-            file_size="100",
-            tags="None",
+            name=form.file_name.data,
+            content=form.file_content.data,
+            type="txt",
+            size="100",
+            abs_path="None",
+            rel_path="None",
             date_modified="4/06",
+            tags="None",
         )
 
         db.session.add(document)
@@ -113,6 +129,33 @@ def add_file():
         flash("Your changes have been saved.")
         return redirect(url_for("add_file"))
     return render_template("add_file.html", form=form, documents=documents)
+
+
+@app.route("/delete_file/", methods=["GET", "POST"])
+def delete_file():
+    if request.method == "POST":
+        id = request.form.get("deleteInput")
+        if id is not None:
+            document = Document.query.get(id)
+
+            if document:
+                db.session.delete(document)
+                db.session.commit()
+                return redirect(url_for("add_file"))
+            else:
+                return 404
+
+        del_all = request.form.get("deleteAllInput")
+        if del_all is not None:
+            try:
+                Document.query.delete()
+                db.session.commit()
+                return redirect(url_for("add_file"))
+            except Exception as e:
+                db.session.rollback()
+                return f"An error occurred: {str(e)}", 500
+
+    return render_template("delete_file.html")
 
 
 @app.route("/search/", methods=["GET", "POST"])
