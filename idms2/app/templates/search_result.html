@@ -1,0 +1,38 @@
+{% extends "base.html" %} {% block content %}
+<div class="column is-8 is-offset-2">
+  <h1 class="title">Search results</h1>
+  <div class="box">
+    <h1>{{results}}</h1>
+    <div class="row">
+      <div class="col-sm-12">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>file_name</th>
+              <th>file_content</th>
+              <th>file_classification</th>
+              <th>file_size</th>
+              <th>tags</th>
+              <th>date_modified</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for document in results %}
+            <tr>
+              <td>{{ document.id }}</td>
+              <td>{{ document.file_name }}</td>
+              <td>{{ document.file_content }}</td>
+              <td>{{ document.file_classification }}</td>
+              <td>{{ document.file_size }}</td>
+              <td>{{ document.tags }}</td>
+              <td>{{ document.date_modified }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

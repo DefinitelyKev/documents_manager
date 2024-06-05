@@ -1,15 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <h1>Search</h1>
-    <form method="POST">
-      Find File: <input type="text" name="search" /><br />
-      <input type="submit" value="Submit" />
+{% extends "base.html" %} {% block content %}
+<div class="column is-8 is-offset-2">
+  <h1 class="title">Enter keywords</h1>
+  <div class="box">
+    <form method="POST" action="/search">
+      <div class="field">
+        <div class="form-group">
+          <input class="input is-large" type="text" name="searchInput" placeholder=" " autofocus="" />
+        </div>
+      </div>
+      <button class="button is-block is-info is-large is-fullwidth">Search</button>
     </form>
-  </body>
-</html>
+  </div>
+</div>
+{% endblock %}

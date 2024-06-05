@@ -1,13 +1,10 @@
 from flask import Flask, render_template, abort, send_file, request, redirect, url_for, jsonify, flash
 from werkzeug.utils import secure_filename
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-import os
 from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog
 from tkinter import *
-from flask_msearch import Search
+import os
 
 from app.utils import file_types_list, extract_text
 from app.form import DocumentForm
@@ -120,17 +117,12 @@ def add_file():
 
 @app.route("/search/", methods=["GET", "POST"])
 def search():
-    # from models import Document
-
-    # query = request.args.get("q")
-    # results = Document.query.msearch(query).all()
-    # return (
-    #     jsonify(
-    #         [{"filename": doc.filename, "classification": doc.classification, "tags": doc.tags} for doc in results]
-    #     ),
-    #     200,
-    # )
-    pass
+    if request.method == "POST":
+        query = request.form.get("searchInput")
+        results = Document.query.msearch(query).all()
+        print(results)
+        return render_template("search_result.html", results=results)
+    return render_template("search.html")
 
 
 if __name__ == "__main__":

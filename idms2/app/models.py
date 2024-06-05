@@ -10,14 +10,13 @@ class Document(db.Model):
     tags = db.Column(db.String(256))
     date_modified = db.Column(db.String(140))
 
-    # __searchable__ = [
-    #     "file_name",
-    #     "file_content",
-    #     "file_classification",
-    #     "file_size",
-    #     "tags",
-    #     "date_modified",
-    # ]  # Columns to be indexed
+    __tablename__ = "document"
 
-
-# search.create_index(Document)
+    __searchable__ = [
+        "file_name",
+        "file_content",
+        "file_classification",
+        "file_size",
+        "tags",
+        "date_modified",
+    ]  # Columns to be indexed
