@@ -2,8 +2,16 @@ import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+
 class Config(object):
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'app.db')
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    UPLOAD_PATH = os.environ.get('UPLOAD_PATH')
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "you-will-never-guess"
+    UPLOAD_PATH = os.environ.get("UPLOAD_PATH")
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///" + os.path.join(basedir, "app.db")
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    # MSEARCH_INDEX_NAME = "msearch"
+    # MSEARCH_BACKEND = "whoosh"
+    # MSEARCH_PRIMARY_KEY = "id"
+    # MSEARCH_ENABLE = True
+    UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
+    # ALLOWED_EXTENSIONS = {"pdf", "docx", "jpg", "jpeg", "png"}
+    OCR_LANG = "eng"

@@ -2,7 +2,7 @@
 
 <!-- Link all style files here -->
 {% block head %} {{ super() }}
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}" />
+<!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}" /> -->
 {% endblock %}
 
 <!-- The title of our application is defined here -->
@@ -25,12 +25,11 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href=" # ">Flask Server</a>
-    </div>
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href=" # ">Documentation</a></li>
-      </ul>
+      <a class="navbar-brand" href="{{url_for('search')}}">Search</a>
+      <a class="navbar-brand" href="{{url_for('add_file')}}">Add file & check database</a>
+      <a class="navbar-brand" href="{{url_for('delete_file')}}">Delete file</a>
+      <a class="navbar-brand" href="{{url_for('upload')}}">Choose root folder</a>
+      <a class="navbar-brand" href="{{url_for('dir_view')}}">Directory view</a>
     </div>
   </div>
 </nav>
