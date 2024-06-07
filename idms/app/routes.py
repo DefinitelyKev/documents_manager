@@ -16,47 +16,59 @@ chosen_folder_path = basedir
 
 
 def getObjFromScan(root, name):
+    file_type = os.path.splitext(name)[1]
+    allowed_file_types = [".txt", ".jpg", ".png", ".pdf", ".docx", ".doc"]
+
+    is_file_allowed = False
+    for i in allowed_file_types:
+        if file_type.endswith(i):
+            is_file_allowed = True
+
+    if not is_file_allowed:
+        return None
+
     abs_path = os.path.join(root, name).replace("\\", "/")
     stat = os.stat(abs_path)
     bytes = getReadableByteSize(stat.st_size)
     m_time = getTimeStampString(stat.st_mtime)
     rel_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
-    file_type = os.path.splitext(name)[1]
 
-    content = ""
-    try:
-        with open(abs_path, "r", errors="ignore") as file:
-            content = file.read()
-    except Exception as e:
-        print(f"Error reading file {abs_path}: {e}")
+    # content = ""
+    # try:
+    #     with open(abs_path, "r", errors="ignore") as file:
+    #         content = file.read()
+    # except Exception as e:
+    #     print(f"Error reading file {abs_path}: {e}")
 
-    return {
-        "name": name,
-        "content": content,
-        "type": file_type,
-        "size": bytes,
-        "m_time": m_time,
-        "abs_path": abs_path,
-        "rel_path": rel_path,
-    }
+    return Document(
+        name=name,
+        type=file_type,
+        size=bytes,
+        abs_path=abs_path,
+        rel_path=rel_path,
+        date_modified=m_time,
+        tags="None",
+    )
 
 
 def uploadDocumentsToDb():
     for root, _, files in os.walk(chosen_folder_path):
         for file_name in files:
-            file_obj = getObjFromScan(root, file_name)
-            document = Document(
-                name=file_obj["name"],
-                content=file_obj["content"],
-                type=file_obj["type"],
-                size=file_obj["size"],
-                abs_path=file_obj["abs_path"],
-                rel_path=file_obj["rel_path"],
-                date_modified=file_obj["m_time"],
-                tags="None",
-            )
-            db.session.add(document)
-            db.session.commit()
+            docment_obj = getObjFromScan(root, file_name)
+            if docment_obj is None:
+                continue
+
+            document = Document.query.filter_by(abs_path=docment_obj.abs_path).first()
+            if document:
+                if document.date_modified != docment_obj.date_modified:
+                    document.size = docment_obj.size
+                    document.rel_path = docment_obj.rel_path
+                    document.date_modified = docment_obj.date_modified
+                    document.tags = docment_obj.tags
+                    db.session.commit()
+            else:
+                db.session.add(docment_obj)
+                db.session.commit()
 
     flash("Your changes have been saved.")
 
@@ -163,7 +175,6 @@ def search():
     if request.method == "POST":
         query = request.form.get("searchInput")
         results = Document.query.msearch(query).all()
-        print(results)
         return render_template("search_result.html", results=results)
     return render_template("search.html")
 
