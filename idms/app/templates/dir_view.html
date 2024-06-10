@@ -10,18 +10,22 @@
           <th>Name</th>
           <th>Modified Time</th>
           <th>Size</th>
+          <th>Type</th>
+          <th>Tags</th>
         </tr>
       </thead>
       <tbody>
         {% for file_obj in files %}
         <tr>
           <td>
-            <a href="{{ url_for('dir_view', req_path=file_obj['link']) }}">
-              <span><i class="{{file_obj['icon']}}" style="margin-right: 0.3em"></i>{{ file_obj['name'] }}</span>
+            <a href="{{ url_for('dir_view', req_path=file_obj['rel_path']) }}">
+              <span><i class="{{file_obj['icon']}}" style="margin-right: 0.3em"></i>{{ file_obj.name }}</span>
             </a>
           </td>
-          <td>{{ file_obj['mTime'] }}</td>
-          <td>{{ file_obj['size'] }}</td>
+          <td>{{ file_obj.date_modified }}</td>
+          <td>{{ file_obj.size }}</td>
+          <td>{{ file_obj.type }}</td>
+          <td>{{ file_obj.tags }}</td>
         </tr>
         {% endfor %}
       </tbody>

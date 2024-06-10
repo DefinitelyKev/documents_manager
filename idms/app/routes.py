@@ -4,8 +4,9 @@ from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog
 from tkinter import *
-import os
 import random
+import ast
+import os
 
 from app.utils import *
 from app.form import DocumentForm
@@ -14,6 +15,8 @@ from app import app, db
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 chosen_folder_path = basedir
+
+random.seed(420)
 
 
 def getObjFromScan(root, name, is_file=True):
@@ -40,7 +43,7 @@ def getObjFromScan(root, name, is_file=True):
         abs_path=abs_path,
         rel_path=rel_path,
         date_modified=m_time,
-        tags=random.choice(tag_list) if file_type is not "folder" else "none",
+        tags=str([random.choice(tag_list) if file_type != "folder" else "none"]),
     )
 
 
@@ -78,6 +81,9 @@ def uploadDocumentsToDb():
     db.session.commit()
 
 
+# def sortFiles():
+
+
 @app.route("/", methods=["GET", "POST"])
 def upload():
     if request.method == "POST":
@@ -96,7 +102,9 @@ def upload():
 @app.route("/dir_view/", methods=["GET", "POST"], defaults={"req_path": ""})
 @app.route("/dir_view/<path:req_path>", methods=["GET", "POST"])
 def dir_view(req_path):
-    abs_path = os.path.join(chosen_folder_path, req_path)
+    abs_path = os.path.join(chosen_folder_path, req_path) if req_path else chosen_folder_path
+    abs_path = abs_path.replace("\\", "/")
+
     if not os.path.exists(abs_path):
         return abort(404)
 
@@ -108,15 +116,15 @@ def dir_view(req_path):
             reader = PdfReader(abs_path)
             print(len(reader.pages))
             page = reader.pages[0]
-
             text = page.extract_text()
             print(text)
         return send_file(abs_path)
 
-    file_names = [fileObjFromScan(x) for x in os.scandir(abs_path)]
-
-    if abs_path == os.path.join(chosen_folder_path, ""):
+    if abs_path == chosen_folder_path:
         uploadDocumentsToDb()
+
+    documents = Document.query.filter(Document.abs_path.like(f"{abs_path}%")).all()
+    direct_children = [doc for doc in documents if os.path.dirname(doc.abs_path) == abs_path]
 
     path_list = []
     dir_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
@@ -128,7 +136,7 @@ def dir_view(req_path):
         sub_path = "/".join(directories[: i + 1])
         path_list.append((directories[i], sub_path))
 
-    return render_template("dir_view.html", files=file_names, dir_path=path_list)
+    return render_template("dir_view.html", files=direct_children, dir_path=path_list)
 
 
 @app.route("/add_file/", methods=["GET", "POST"])
