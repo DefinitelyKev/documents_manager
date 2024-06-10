@@ -1,2 +1,3 @@
 /venv
 /idms/app.db
+/idms/migrations

@@ -5,6 +5,7 @@ from pathlib import Path
 from tkinter import filedialog
 from tkinter import *
 import os
+import random
 
 from app.utils import *
 from app.form import DocumentForm
@@ -15,17 +16,14 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 chosen_folder_path = basedir
 
 
-def getObjFromScan(root, name):
-    file_type = os.path.splitext(name)[1]
-    allowed_file_types = [".txt", ".jpg", ".png", ".pdf", ".docx", ".doc"]
-
-    is_file_allowed = False
-    for i in allowed_file_types:
-        if file_type.endswith(i):
-            is_file_allowed = True
-
-    if not is_file_allowed:
-        return None
+def getObjFromScan(root, name, is_file=True):
+    if is_file:
+        file_type = os.path.splitext(name)[1]
+        allowed_file_types = [".txt", ".jpg", ".png", ".pdf", ".docx", ".doc"]
+        if file_type not in allowed_file_types:
+            return None
+    else:
+        file_type = "folder"
 
     abs_path = os.path.join(root, name).replace("\\", "/")
     stat = os.stat(abs_path)
@@ -33,12 +31,7 @@ def getObjFromScan(root, name):
     m_time = getTimeStampString(stat.st_mtime)
     rel_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
 
-    # content = ""
-    # try:
-    #     with open(abs_path, "r", errors="ignore") as file:
-    #         content = file.read()
-    # except Exception as e:
-    #     print(f"Error reading file {abs_path}: {e}")
+    tag_list = ["resume", "invoice", "checklist", "essay", "research paper", "homework", "other"]
 
     return Document(
         name=name,
@@ -47,30 +40,42 @@ def getObjFromScan(root, name):
         abs_path=abs_path,
         rel_path=rel_path,
         date_modified=m_time,
-        tags="None",
+        tags=random.choice(tag_list) if file_type is not "folder" else "none",
     )
 
 
+def addOrUpdateDocment(documents_to_add, documents_to_update, root, name, is_file=True):
+    document_obj = getObjFromScan(root, name, is_file)
+    if document_obj is None:
+        return
+
+    document = Document.query.filter_by(abs_path=document_obj.abs_path).first()
+    if document:
+        if document.date_modified != document_obj.date_modified:
+            document.size = document_obj.size
+            document.rel_path = document_obj.rel_path
+            document.date_modified = document_obj.date_modified
+            document.tags = document_obj.tags
+            documents_to_update.append(document)
+    else:
+        documents_to_add.append(document_obj)
+
+
 def uploadDocumentsToDb():
-    for root, _, files in os.walk(chosen_folder_path):
+    documents_to_add = []
+    documents_to_update = []
+
+    for root, dirs, files in os.walk(chosen_folder_path):
+        for dir_name in dirs:
+            addOrUpdateDocment(documents_to_add, documents_to_update, root, dir_name, is_file=False)
         for file_name in files:
-            docment_obj = getObjFromScan(root, file_name)
-            if docment_obj is None:
-                continue
+            addOrUpdateDocment(documents_to_add, documents_to_update, root, file_name, is_file=True)
 
-            document = Document.query.filter_by(abs_path=docment_obj.abs_path).first()
-            if document:
-                if document.date_modified != docment_obj.date_modified:
-                    document.size = docment_obj.size
-                    document.rel_path = docment_obj.rel_path
-                    document.date_modified = docment_obj.date_modified
-                    document.tags = docment_obj.tags
-                    db.session.commit()
-            else:
-                db.session.add(docment_obj)
-                db.session.commit()
-
-    flash("Your changes have been saved.")
+    if documents_to_add:
+        db.session.bulk_save_objects(documents_to_add)
+    if documents_to_update:
+        db.session.bulk_update_mappings(Document, [doc.__dict__ for doc in documents_to_update])
+    db.session.commit()
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -96,8 +101,15 @@ def dir_view(req_path):
         return abort(404)
 
     if os.path.isfile(abs_path):
-        if "jpg" in abs_path or "png" in abs_path:
+        if abs_path.endswith(".png") or abs_path.endswith(".jpg"):
             text = extract_text(abs_path)
+            print(text)
+        if abs_path.endswith(".pdf"):
+            reader = PdfReader(abs_path)
+            print(len(reader.pages))
+            page = reader.pages[0]
+
+            text = page.extract_text()
             print(text)
         return send_file(abs_path)
 
