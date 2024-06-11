@@ -1,3 +1,4 @@
 /venv
 /idms/app.db
 /idms/migrations
+__pycache__
