@@ -14,7 +14,7 @@ from app.models import Document
 from app import app, db
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-chosen_folder_path = basedir
+chosen_folder_path = ""
 
 random.seed(420)
 
@@ -35,6 +35,7 @@ def getObjFromScan(root, name, is_file=True):
     rel_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
 
     tag_list = ["resume", "invoice", "checklist", "essay", "research paper", "homework", "other"]
+    chosen_tag = str([random.choice(tag_list) if file_type != "folder" else "none"])
 
     return Document(
         name=name,
@@ -43,7 +44,7 @@ def getObjFromScan(root, name, is_file=True):
         abs_path=abs_path,
         rel_path=rel_path,
         date_modified=m_time,
-        tags=str([random.choice(tag_list) if file_type != "folder" else "none"]),
+        tags=chosen_tag,
     )
 
 
@@ -81,7 +82,39 @@ def uploadDocumentsToDb():
     db.session.commit()
 
 
-# def sortFiles():
+def sortFiles():
+    documents = Document.query.all()
+    tag_to_paths = {}
+
+    for doc in documents:
+        tags = ast.literal_eval(doc.tags)
+        for tag in tags:
+            if tag not in tag_to_paths:
+                tag_to_paths[tag] = []
+            tag_to_paths[tag].append(doc.abs_path)
+
+    for tag, paths in tag_to_paths.items():
+        if tag == "none":
+            continue
+
+        tag_folder_path = os.path.join(chosen_folder_path, secure_filename(tag))
+        if not os.path.exists(tag_folder_path):
+            os.mkdir(tag_folder_path)
+
+        for path in paths:
+            try:
+                new_path = os.path.join(tag_folder_path, os.path.basename(path))
+                os.rename(path, new_path)
+
+                document = Document.query.filter_by(abs_path=path).first()
+                document.abs_path = new_path
+                document.rel_path = os.path.relpath(new_path, chosen_folder_path)
+
+                db.session.add(document)
+            except Exception as e:
+                print(f"Error moving file {path}: {e}")
+
+    db.session.commit()
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -102,11 +135,10 @@ def upload():
 @app.route("/dir_view/", methods=["GET", "POST"], defaults={"req_path": ""})
 @app.route("/dir_view/<path:req_path>", methods=["GET", "POST"])
 def dir_view(req_path):
-    abs_path = os.path.join(chosen_folder_path, req_path) if req_path else chosen_folder_path
-    abs_path = abs_path.replace("\\", "/")
+    abs_path = os.path.join(chosen_folder_path, req_path).replace("\\", "/") if req_path else chosen_folder_path
 
     if not os.path.exists(abs_path):
-        return abort(404)
+        return redirect(url_for("upload"))
 
     if os.path.isfile(abs_path):
         if abs_path.endswith(".png") or abs_path.endswith(".jpg"):
@@ -160,6 +192,13 @@ def add_file():
 
         flash("Your changes have been saved.")
         return redirect(url_for("add_file"))
+
+    if request.method == "POST":
+        sort_req = request.form.get("sortInput")
+        if sort_req is not None:
+            sortFiles()
+            return redirect(url_for("add_file"))
+
     return render_template("add_file.html", form=form, documents=documents)
 
 
