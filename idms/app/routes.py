@@ -13,7 +13,6 @@ from app.models import Document
 from app import app, db
 
 chosen_folder_path = load_chosen_folder_path()
-files_processed = False
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -27,7 +26,6 @@ def upload():
         del root
         chosen_folder_path = file_name
         save_chosen_folder_path(chosen_folder_path)
-        files_processed = False
         return redirect(url_for("dir_view"))
 
     return render_template("upload.html")
@@ -36,7 +34,7 @@ def upload():
 @app.route("/dir_view/", methods=["GET", "POST"], defaults={"req_path": ""})
 @app.route("/dir_view/<path:req_path>", methods=["GET", "POST"])
 def dir_view(req_path):
-    global files_processed, chosen_folder_path
+    global chosen_folder_path
     abs_path = os.path.join(chosen_folder_path, req_path).replace("\\", "/") if req_path else chosen_folder_path
 
     if not os.path.exists(abs_path):
@@ -46,9 +44,9 @@ def dir_view(req_path):
         img_to_text(abs_path)
         return send_file(abs_path)
 
-    if abs_path == chosen_folder_path and not files_processed:
-        uploadDocumentsToDb()
-        files_processed = True
+    if abs_path == chosen_folder_path:
+        upload_documents_to_db()
+        delete_unused_records()
 
     documents = Document.query.filter(Document.abs_path.like(f"{abs_path}%")).all()
     direct_children = [doc for doc in documents if os.path.dirname(doc.abs_path) == abs_path]
@@ -94,6 +92,15 @@ def add_file():
         if sort_req is not None:
             sort_files()
             files_processed = False
+            return redirect(url_for("add_file"))
+
+        ai_req = request.form.get("aiInput")
+        if ai_req is not None:
+            open_ai_model(
+                img_to_text(
+                    "C:/Users/Kevin Nguyen/Downloads/Projects/document_manager/idms/example_text_folder/resume/Resume.pdf"
+                )
+            )
             return redirect(url_for("add_file"))
 
     return render_template("add_file.html", form=form, documents=documents)

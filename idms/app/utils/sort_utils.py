@@ -29,6 +29,13 @@ def sort_files():
         for path in paths:
             try:
                 new_path = os.path.join(tag_folder_path, os.path.basename(path))
+                count = 1
+                while os.path.exists(new_path):
+                    directory, file_name = os.path.split(new_path)
+                    file_base_name, file_extension = os.path.splitext(file_name)
+                    new_file_name = f"{file_base_name}({count}){file_extension}"
+                    new_path = os.path.join(directory, new_file_name)
+                    count += 1
                 os.rename(path, new_path)
 
                 document = Document.query.filter_by(abs_path=path).first()

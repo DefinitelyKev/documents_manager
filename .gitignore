@@ -2,3 +2,4 @@
 /idms/app.db
 /idms/migrations
 __pycache__
+.env
