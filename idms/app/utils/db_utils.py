@@ -12,7 +12,7 @@ random.seed(420)
 def getObjFromScan(root, name, is_file=True):
     if is_file:
         file_type = os.path.splitext(name)[1]
-        allowed_file_types = [".txt", ".jpg", ".png", ".pdf", ".docx", ".doc"]
+        allowed_file_types = [".txt", ".jpg", ".png", ".jpeg", ".pdf", ".docx", ".doc", ".csv", ".xlsx", ".xml"]
         if file_type not in allowed_file_types:
             return None
     else:
@@ -20,8 +20,8 @@ def getObjFromScan(root, name, is_file=True):
 
     abs_path = os.path.join(root, name).replace("\\", "/")
     stat = os.stat(abs_path)
-    bytes = getReadableByteSize(stat.st_size)
-    m_time = getTimeStampString(stat.st_mtime)
+    bytes = get_readable_byte_size(stat.st_size)
+    m_time = get_time_stamp_string(stat.st_mtime)
     rel_path = os.path.relpath(abs_path, routes.chosen_folder_path).replace("\\", "/")
 
     tag_list = ["resume", "invoice", "checklist", "essay", "research paper", "homework", "other"]

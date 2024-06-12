@@ -12,19 +12,22 @@ from app.form import DocumentForm
 from app.models import Document
 from app import app, db
 
-chosen_folder_path = ""
+chosen_folder_path = load_chosen_folder_path()
+files_processed = False
 
 
 @app.route("/", methods=["GET", "POST"])
 def upload():
     if request.method == "POST":
-        global chosen_folder_path
+        global chosen_folder_path, files_processed
         root = Tk()
         root.attributes("-topmost", True, "-alpha", 0)
         file_name = filedialog.askdirectory()
         root.destroy()
         del root
         chosen_folder_path = file_name
+        save_chosen_folder_path(chosen_folder_path)
+        files_processed = False
         return redirect(url_for("dir_view"))
 
     return render_template("upload.html")
@@ -33,25 +36,19 @@ def upload():
 @app.route("/dir_view/", methods=["GET", "POST"], defaults={"req_path": ""})
 @app.route("/dir_view/<path:req_path>", methods=["GET", "POST"])
 def dir_view(req_path):
+    global files_processed, chosen_folder_path
     abs_path = os.path.join(chosen_folder_path, req_path).replace("\\", "/") if req_path else chosen_folder_path
 
     if not os.path.exists(abs_path):
         return redirect(url_for("upload"))
 
     if os.path.isfile(abs_path):
-        if abs_path.endswith(".png") or abs_path.endswith(".jpg"):
-            text = extract_text(abs_path)
-            print(text)
-        if abs_path.endswith(".pdf"):
-            reader = PdfReader(abs_path)
-            print(len(reader.pages))
-            page = reader.pages[0]
-            text = page.extract_text()
-            print(text)
+        img_to_text(abs_path)
         return send_file(abs_path)
 
-    if abs_path == chosen_folder_path:
+    if abs_path == chosen_folder_path and not files_processed:
         uploadDocumentsToDb()
+        files_processed = True
 
     documents = Document.query.filter(Document.abs_path.like(f"{abs_path}%")).all()
     direct_children = [doc for doc in documents if os.path.dirname(doc.abs_path) == abs_path]
@@ -71,6 +68,7 @@ def dir_view(req_path):
 
 @app.route("/add_file/", methods=["GET", "POST"])
 def add_file():
+    global files_processed
     form = DocumentForm()
     documents = Document.query.all()
     if form.validate_on_submit():
@@ -94,7 +92,8 @@ def add_file():
     if request.method == "POST":
         sort_req = request.form.get("sortInput")
         if sort_req is not None:
-            sortFiles()
+            sort_files()
+            files_processed = False
             return redirect(url_for("add_file"))
 
     return render_template("add_file.html", form=form, documents=documents)

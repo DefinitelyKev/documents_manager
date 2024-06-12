@@ -7,7 +7,7 @@ import app.routes as routes
 from app import db
 
 
-def sortFiles():
+def sort_files():
     documents = Document.query.all()
     tag_to_paths = {}
 
