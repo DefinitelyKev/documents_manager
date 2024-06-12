@@ -1,47 +1,59 @@
 {% extends "base.html" %} {% block content %}
-    <h3>
-      {% for name, path in dir_path %}
-      <a href="{{ url_for('dir_view', req_path=path) }}">{{ name }}</a>
-      {% if not loop.last %} / {% endif %} {% endfor %}
-    </h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Modified Time</th>
-          <th>Size</th>
-          <th>Type</th>
-          <th>Tags</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for file_obj in files %}
-        <tr>
-          <td>
-            <a href="{{ url_for('dir_view', req_path=file_obj['rel_path']) }}">
-              <span><i class="{{file_obj['icon']}}" style="margin-right: 0.3em"></i>{{ file_obj.name }}</span>
-            </a>
-          </td>
-          <td>{{ file_obj.date_modified }}</td>
-          <td>{{ file_obj.size }}</td>
-          <td>{{ file_obj.type }}</td>
-          <td>{{ file_obj.tags }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <style>
-      table {
-        table-layout: fixed;
-        width: 100%;
-      }
-      table td,
-      th {
-        word-wrap: break-word;
-      }
-      th {
-        text-align: left;
-      }
-    </style>
-  </body>
-{% endblock %}
+<div class="column is-8 is-offset-2">
+  <h1 class="title">Sort by type</h1>
+  <div class="box">
+    <form method="POST" action="/add_file">
+      <div class="field">
+        <div class="form-group">
+          <input class="input is-large" type="text" name="sortInput" placeholder=" " autofocus="" />
+        </div>
+      </div>
+      <button class="button is-block is-info is-large is-fullwidth">Sort</button>
+    </form>
+  </div>
+</div>
+<h3>
+  {% for name, path in dir_path %}
+  <a href="{{ url_for('dir_view', req_path=path) }}">{{ name }}</a>
+  {% if not loop.last %} / {% endif %} {% endfor %}
+</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Modified Time</th>
+      <th>Size</th>
+      <th>Type</th>
+      <th>Tags</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for file_obj in files %}
+    <tr>
+      <td>
+        <a href="{{ url_for('dir_view', req_path=file_obj['rel_path']) }}">
+          <span><i class="{{file_obj['icon']}}" style="margin-right: 0.3em"></i>{{ file_obj.name }}</span>
+        </a>
+      </td>
+      <td>{{ file_obj.date_modified }}</td>
+      <td>{{ file_obj.size }}</td>
+      <td>{{ file_obj.type }}</td>
+      <td>{{ file_obj.tags }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<style>
+  table {
+    table-layout: fixed;
+    width: 100%;
+  }
+  table td,
+  th {
+    word-wrap: break-word;
+  }
+  th {
+    text-align: left;
+  }
+</style>
+{% endblock content %}

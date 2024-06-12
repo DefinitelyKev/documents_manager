@@ -80,7 +80,7 @@ def remove_empty_newlines(text):
 
 def get_time_stamp_string(t_sec) -> str:
     t_obj = datetime.fromtimestamp(t_sec)
-    t_str = datetime.strftime(t_obj, "%Y-%m-%d %H:%M:%S")
+    t_str = datetime.strftime(t_obj, "%d/%m/%Y %I:%M %p")
     return t_str
 
 

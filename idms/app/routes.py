@@ -15,6 +15,11 @@ from app import app, db
 chosen_folder_path = load_chosen_folder_path()
 
 
+@app.route("/main/", methods=["GET", "POST"])
+def main():
+    return render_template("main.html")
+
+
 @app.route("/", methods=["GET", "POST"])
 def upload():
     if request.method == "POST":
@@ -46,7 +51,7 @@ def dir_view(req_path):
 
     if abs_path == chosen_folder_path:
         upload_documents_to_db()
-        delete_unused_records()
+        # delete_unused_records()
 
     documents = Document.query.filter(Document.abs_path.like(f"{abs_path}%")).all()
     direct_children = [doc for doc in documents if os.path.dirname(doc.abs_path) == abs_path]
@@ -92,7 +97,7 @@ def add_file():
         if sort_req is not None:
             sort_files()
             files_processed = False
-            return redirect(url_for("add_file"))
+            return redirect(url_for("dir_view"))
 
         ai_req = request.form.get("aiInput")
         if ai_req is not None:

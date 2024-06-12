@@ -10,14 +10,14 @@ import app.routes as routes
 random.seed(420)
 
 
-def delete_unused_records():
-    documents = Document.query.all()
-    unused_documents = [document for document in documents if not os.path.exists(document.abs_path)]
+# def delete_unused_records():
+#     documents = Document.query.all()
+#     unused_documents = [document for document in documents if not os.path.exists(document.abs_path)]
 
-    if unused_documents:
-        unused_ids = [doc.id for doc in unused_documents]
-        db.session.query(Document).filter(Document.id.in_(unused_ids)).delete(synchronize_session=False)
-        db.session.commit()
+#     if unused_documents:
+#         unused_ids = [doc.id for doc in unused_documents]
+#         db.session.query(Document).filter(Document.id.in_(unused_ids)).delete(synchronize_session=False)
+#         db.session.commit()
 
 
 def extract_text_from_docx(path):
@@ -43,6 +43,14 @@ def extract_text(path, file_type):
         return ""
 
 
+def create_tags(file_type, abs_path):
+    tag = "None"
+    if file_type != "folder" and create_tags:
+        text = extract_text(abs_path, file_type)
+        tag = str([open_ai_model(text)])
+    return tag
+
+
 def get_obj_from_scan(root, name, is_file=True):
     file_type = os.path.splitext(name)[1] if is_file else "folder"
 
@@ -50,36 +58,42 @@ def get_obj_from_scan(root, name, is_file=True):
     rel_path = os.path.relpath(abs_path, routes.chosen_folder_path).replace("\\", "/")
 
     stat = os.stat(abs_path)
+    inode = stat.st_ino
     bytes = get_readable_byte_size(stat.st_size)
     m_time = get_time_stamp_string(stat.st_mtime)
 
-    text = ""
-    tag = "none"
-    if file_type != "folder":
-        text = extract_text(abs_path, file_type)
-        tag = open_ai_model(text)
-
     return Document(
+        id=inode,
         name=name,
         type=file_type,
         size=bytes,
         abs_path=abs_path,
         rel_path=rel_path,
         date_modified=m_time,
-        tags=str([tag]),
+        tags="[None]",
     )
 
 
-def add_or_update_docment(documents_to_add, documents_to_update, root, name, is_file=True):
-    abs_path = os.path.join(root, name).replace("\\", "/")
+def is_modified_document(document, document_obj):
+    if document.size != document_obj.size or document.date_modified != document_obj.date_modified:
+        return 0
+    elif document.abs_path != document_obj.abs_path or document.rel_path != document_obj.rel_path:
+        return 1
+    return 2
 
-    document = Document.query.filter_by(abs_path=abs_path).first()
+
+def add_or_update_docment(documents_to_add, documents_to_update, root, name, is_file=True):
+    document_obj = get_obj_from_scan(root, name, is_file)
+
+    document = Document.query.filter_by(id=document_obj.id).first()
     if document:
-        if document.date_modified != get_time_stamp_string(os.stat(abs_path).st_mtime):
-            document_obj = get_obj_from_scan(root, name, is_file)
-            documents_to_update.append(document)
+        if is_modified_document(document, document_obj) == 0:
+            document_obj.tags = create_tags(document_obj.type, document_obj.abs_path)
+            documents_to_update.append(document_obj)
+        elif is_modified_document(document, document_obj) == 1:
+            documents_to_update.append(document_obj)
     else:
-        document_obj = get_obj_from_scan(root, name, is_file)
+        document_obj.tags = create_tags(document_obj.type, document_obj.abs_path)
         documents_to_add.append(document_obj)
 
 
