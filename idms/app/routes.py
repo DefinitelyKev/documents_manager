@@ -15,9 +15,42 @@ from app import app, db
 chosen_folder_path = load_chosen_folder_path()
 
 
-@app.route("/main/", methods=["GET", "POST"])
-def main():
-    return render_template("main.html")
+@app.route("/main/", methods=["GET", "POST"], defaults={"req_path": ""})
+@app.route("/main/<path:req_path>", methods=["GET", "POST"])
+def main(req_path):
+    global chosen_folder_path
+    abs_path = os.path.join(chosen_folder_path, req_path).replace("\\", "/") if req_path else chosen_folder_path
+
+    if not os.path.exists(abs_path):
+        return redirect(url_for("upload"))
+
+    if os.path.isfile(abs_path):
+        img_to_text(abs_path)
+        return send_file(abs_path)
+
+    if abs_path == chosen_folder_path:
+        upload_documents_to_db()
+        # delete_unused_records()
+
+    documents = Document.query.filter(Document.abs_path.like(f"{abs_path}%")).all()
+    direct_children = [doc for doc in documents if os.path.dirname(doc.abs_path) == abs_path]
+
+    path_list = []
+    dir_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
+    directories = dir_path.split("/")
+
+    for i in range(len(directories)):
+        sub_path = "/".join(directories[: i + 1])
+        path_list.append((directories[i], sub_path))
+
+    if dir_path == ".":
+        path_list[0] = (f"{os.path.basename(chosen_folder_path)}", ".")
+    else:
+        path_list = [(f"{os.path.basename(chosen_folder_path)}", ".")] + path_list
+
+    parent_dir = os.path.dirname(req_path)
+
+    return render_template("main.html", files=direct_children, dir_path=path_list, parent_dir=parent_dir)
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -51,7 +84,7 @@ def dir_view(req_path):
 
     if abs_path == chosen_folder_path:
         upload_documents_to_db()
-        # delete_unused_records()
+        delete_unused_records()
 
     documents = Document.query.filter(Document.abs_path.like(f"{abs_path}%")).all()
     direct_children = [doc for doc in documents if os.path.dirname(doc.abs_path) == abs_path]
@@ -59,12 +92,18 @@ def dir_view(req_path):
     path_list = []
     dir_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
     directories = dir_path.split("/")
-    if dir_path not in ["..", "."]:
-        path_list.append((".", "."))
 
     for i in range(len(directories)):
         sub_path = "/".join(directories[: i + 1])
         path_list.append((directories[i], sub_path))
+
+    if dir_path == ".":
+        path_list[0] = (f"{os.path.basename(chosen_folder_path)}", ".")
+    else:
+        path_list = [(f"{os.path.basename(chosen_folder_path)}", ".")] + path_list
+
+    parent_dir = os.path.dirname(req_path)
+    print(parent_dir)
 
     return render_template("dir_view.html", files=direct_children, dir_path=path_list)
 
@@ -72,25 +111,7 @@ def dir_view(req_path):
 @app.route("/add_file/", methods=["GET", "POST"])
 def add_file():
     global files_processed
-    form = DocumentForm()
     documents = Document.query.all()
-    if form.validate_on_submit():
-        document = Document(
-            name=form.file_name.data,
-            content=form.file_content.data,
-            type="txt",
-            size="100",
-            abs_path="None",
-            rel_path="None",
-            date_modified="4/06",
-            tags="None",
-        )
-
-        db.session.add(document)
-        db.session.commit()
-
-        flash("Your changes have been saved.")
-        return redirect(url_for("add_file"))
 
     if request.method == "POST":
         sort_req = request.form.get("sortInput")
@@ -99,24 +120,15 @@ def add_file():
             files_processed = False
             return redirect(url_for("dir_view"))
 
-        ai_req = request.form.get("aiInput")
-        if ai_req is not None:
-            open_ai_model(
-                img_to_text(
-                    "C:/Users/Kevin Nguyen/Downloads/Projects/document_manager/idms/example_text_folder/resume/Resume.pdf"
-                )
-            )
-            return redirect(url_for("add_file"))
-
-    return render_template("add_file.html", form=form, documents=documents)
+    return render_template("add_file.html", documents=documents)
 
 
 @app.route("/delete_file/", methods=["GET", "POST"])
 def delete_file():
     if request.method == "POST":
-        id = request.form.get("deleteInput")
-        if id is not None:
-            document = Document.query.get(id)
+        del_by_id = request.form.get("deleteInput")
+        if del_by_id is not None:
+            document = Document.query.get(del_by_id)
 
             if document:
                 db.session.delete(document)

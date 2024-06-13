@@ -1,149 +1,302 @@
 body {
   margin-top: 20px;
-  background-color: #f1f3f7;
-}
-.search-box .form-control {
-  border-radius: 10px;
-  padding-left: 40px;
 }
 
-.search-box .search-icon {
-  position: absolute;
-  left: 13px;
-  top: 50%;
-  -webkit-transform: translateY(-50%);
-  transform: translateY(-50%);
-  fill: #545965;
-  width: 16px;
-  height: 16px;
-}
-.card {
-  margin-bottom: 24px;
-  -webkit-box-shadow: 0 2px 3px #e4e8f0;
-  box-shadow: 0 2px 3px #e4e8f0;
-}
-.card {
-  position: relative;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  min-width: 0;
-  word-wrap: break-word;
-  background-color: #fff;
-  background-clip: border-box;
-  border: 1px solid #eff0f2;
-  border-radius: 1rem;
-}
-.me-3 {
-  margin-right: 1rem !important;
+.no-underline:hover {
+  text-decoration: none;
 }
 
-.font-size-24 {
-  font-size: 24px !important;
-}
-.avatar-title {
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  background-color: #3b76e1;
-  color: #fff;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  font-weight: 500;
-  height: 100%;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.bg-soft-info {
-  background-color: rgba(87, 201, 235, 0.25) !important;
-}
-
-.bg-soft-primary {
-  background-color: rgba(59, 118, 225, 0.25) !important;
-}
-
-.avatar-xs {
-  height: 1rem;
-  width: 1rem;
-}
-
-.avatar-sm {
-  height: 2rem;
-  width: 2rem;
-}
-
-.avatar {
-  height: 3rem;
-  width: 3rem;
-}
-
-.avatar-md {
-  height: 4rem;
-  width: 4rem;
-}
-
-.avatar-lg {
-  height: 5rem;
-  width: 5rem;
-}
-
-.avatar-xl {
-  height: 6rem;
-  width: 6rem;
-}
-
-.avatar-title {
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  background-color: #3b76e1;
-  color: #fff;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  font-weight: 500;
-  height: 100%;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.avatar-group {
-  display: -webkit-box;
+.file-manager-actions {
   display: -ms-flexbox;
   display: flex;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
-  padding-left: 8px;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+.file-manager-actions > * {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+.file-manager-container {
+  display: -ms-flexbox;
+  display: grid;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
-.avatar-group .avatar-group-item {
-  margin-left: -8px;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  -webkit-transition: all 0.2s;
-  transition: all 0.2s;
+.file-manager-container.file-manager-col-view {
+  display: -ms-flexbox;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
-.avatar-group .avatar-group-item:hover {
+.file-item {
   position: relative;
-  -webkit-transform: translateY(-2px);
-  transform: translateY(-2px);
+  z-index: 1;
+  -ms-flex: 0 0 auto;
+  flex: 0 0 auto;
+  border: 1px solid #eee;
+  cursor: pointer;
+  border-radius: 10px;
 }
-
-.fw-medium {
-  font-weight: 500;
+.file-item:hover,
+.file-item.focused {
+  border-color: rgba(0, 0, 0, 0.05);
 }
-
-a {
-  text-decoration: none !important;
+.file-item.focused {
+  z-index: 2;
+}
+.file-item * {
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.dark-style .file-item:hover,
+.dark-style .file-item.focused {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.file-item-checkbox {
+  margin: 0 !important;
+}
+.file-item-select-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  opacity: 0;
+}
+.file-item-img {
+  background-color: transparent;
+  background-position: center center;
+  background-size: cover;
+}
+.file-item-name {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  padding: 0.5rem;
+  -webkit-line-clamp: 2; /* Number of lines to display before truncating */
+  -webkit-box-orient: vertical;
+}
+.file-manager-col-view .file-item {
+  margin: 0 0.25rem 0.25rem 0;
+  padding: 1.25rem 0 1rem 0;
+  /* width: 9rem; */
+  text-align: center;
+}
+[dir="rtl"] .file-manager-col-view .file-item {
+  margin-right: 0;
+  margin-left: 0.25rem;
+}
+.file-manager-col-view .file-item-img,
+.file-manager-col-view .file-item-icon {
+  display: block;
+  margin: 0 auto 0.75rem auto;
+  width: 6rem;
+  height: 6rem;
+  font-size: 4rem;
+  line-height: 6rem;
+}
+.file-manager-col-view .file-item-level-up {
+  font-size: 2.5rem;
+}
+.file-manager-col-view .file-item-checkbox,
+.file-manager-col-view .file-item-actions {
+  position: absolute;
+  top: 6px;
+}
+.file-manager-col-view .file-item-checkbox {
+  left: 6px;
+}
+[dir="rtl"] .file-manager-col-view .file-item-checkbox {
+  right: 6px;
+  left: auto;
+}
+.file-manager-col-view .file-item-actions {
+  right: 6px;
+}
+[dir="rtl"] .file-manager-col-view .file-item-actions {
+  right: auto;
+  left: 6px;
+}
+.file-manager-col-view .file-item-name {
+  width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  padding: 0 0.75rem 0 0.75rem;
+}
+.file-manager-col-view .file-manager-row-header,
+.file-manager-col-view .file-item-changed {
+  display: none;
+}
+.file-manager-row-view .file-manager-row-header,
+.file-manager-row-view .file-item {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  margin: 0 0 0.125rem 0;
+  padding: 0.25rem 3rem 0.25rem 2.25em;
+  width: 100%;
+}
+[dir="rtl"] .file-manager-row-view .file-manager-row-header,
+[dir="rtl"] .file-manager-row-view .file-item {
+  padding-right: 2.25em;
+  padding-left: 3rem;
+}
+.file-manager-row-view .file-item-img,
+.file-manager-row-view .file-item-icon {
+  display: block;
+  margin: 0 1rem;
+  width: 3rem;
+  height: 3rem;
+  text-align: center;
+  font-size: 2rem;
+  line-height: 3rem;
+}
+.file-manager-row-view .file-item-level-up {
+  font-size: 1rem;
+}
+.file-manager-row-view .file-item-checkbox,
+.file-manager-row-view .file-item-actions {
+  position: absolute;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+.file-manager-row-view .file-item-checkbox {
+  left: 10px;
+}
+[dir="rtl"] .file-manager-row-view .file-item-checkbox {
+  right: 10px;
+  left: auto;
+}
+.file-manager-row-view .file-item-actions {
+  right: 10px;
+}
+[dir="rtl"] .file-manager-row-view .file-item-actions {
+  right: auto;
+  left: 10px;
+}
+.file-manager-row-view .file-item-changed {
+  display: none;
+  margin-left: auto;
+  width: 10rem;
+}
+[dir="rtl"] .file-manager-row-view .file-item-changed {
+  margin-right: auto;
+  margin-left: 0;
+}
+.file-manager-row-view .file-item-name {
+  width: calc(100% - 4rem);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  padding: 0.5rem;
+}
+.file-manager-row-view .file-manager-row-header {
+  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+  font-weight: bold;
+}
+.file-manager-row-view .file-manager-row-header .file-item-name {
+  margin-left: 4rem;
+}
+[dir="rtl"] .file-manager-row-view .file-manager-row-header .file-item-name {
+  margin-right: 4rem;
+  margin-left: 0;
+}
+.light-style .file-item-name {
+  color: #4e5155 !important;
+}
+.light-style .file-item.selected .file-item-select-bg {
+  opacity: 0.15;
+}
+@media (min-width: 768px) {
+  .light-style .file-manager-row-view .file-item-changed {
+    display: block;
+  }
+  .light-style .file-manager-row-view .file-item-name {
+    width: calc(100% - 15rem);
+  }
+}
+@media (min-width: 992px) {
+  .light-style .file-manager-col-view .file-item-checkbox,
+  .light-style .file-manager-col-view .file-item-actions {
+    opacity: 0;
+  }
+  .light-style .file-manager-col-view .file-item:hover .file-item-checkbox,
+  .light-style .file-manager-col-view .file-item.focused .file-item-checkbox,
+  .light-style .file-manager-col-view .file-item.selected .file-item-checkbox,
+  .light-style .file-manager-col-view .file-item:hover .file-item-actions,
+  .light-style .file-manager-col-view .file-item.focused .file-item-actions,
+  .light-style .file-manager-col-view .file-item.selected .file-item-actions {
+    opacity: 1;
+  }
+}
+.material-style .file-item-name {
+  color: #4e5155 !important;
+}
+.material-style .file-item.selected .file-item-select-bg {
+  opacity: 0.15;
+}
+@media (min-width: 768px) {
+  .material-style .file-manager-row-view .file-item-changed {
+    display: block;
+  }
+  .material-style .file-manager-row-view .file-item-name {
+    width: calc(100% - 15rem);
+  }
+}
+@media (min-width: 992px) {
+  .material-style .file-manager-col-view .file-item-checkbox,
+  .material-style .file-manager-col-view .file-item-actions {
+    opacity: 0;
+  }
+  .material-style .file-manager-col-view .file-item:hover .file-item-checkbox,
+  .material-style .file-manager-col-view .file-item.focused .file-item-checkbox,
+  .material-style .file-manager-col-view .file-item.selected .file-item-checkbox,
+  .material-style .file-manager-col-view .file-item:hover .file-item-actions,
+  .material-style .file-manager-col-view .file-item.focused .file-item-actions,
+  .material-style .file-manager-col-view .file-item.selected .file-item-actions {
+    opacity: 1;
+  }
+}
+.dark-style .file-item-name {
+  color: #fff !important;
+}
+.dark-style .file-item.selected .file-item-select-bg {
+  opacity: 0.15;
+}
+@media (min-width: 768px) {
+  .dark-style .file-manager-row-view .file-item-changed {
+    display: block;
+  }
+  .dark-style .file-manager-row-view .file-item-name {
+    width: calc(100% - 15rem);
+  }
+}
+@media (min-width: 992px) {
+  .dark-style .file-manager-col-view .file-item-checkbox,
+  .dark-style .file-manager-col-view .file-item-actions {
+    opacity: 0;
+  }
+  .dark-style .file-manager-col-view .file-item:hover .file-item-checkbox,
+  .dark-style .file-manager-col-view .file-item.focused .file-item-checkbox,
+  .dark-style .file-manager-col-view .file-item.selected .file-item-checkbox,
+  .dark-style .file-manager-col-view .file-item:hover .file-item-actions,
+  .dark-style .file-manager-col-view .file-item.focused .file-item-actions,
+  .dark-style .file-manager-col-view .file-item.selected .file-item-actions {
+    opacity: 1;
+  }
 }

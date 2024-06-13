@@ -10,6 +10,7 @@ class Document(db.Model):
     abs_path = db.Column(db.String(256), unique=True, nullable=False)
     rel_path = db.Column(db.String(256), nullable=False)
     date_modified = db.Column(db.String(140), nullable=False)
+    icon = db.Column(db.String(50), nullable=False)
     tags = db.Column(db.String(256))
 
     __tablename__ = "document"
