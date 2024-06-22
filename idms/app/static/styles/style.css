@@ -35,14 +35,27 @@ body {
   flex-wrap: wrap;
 }
 
+.file-item-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  color: #fff;
+  display: inline-block;
+}
+
 .file-item {
   position: relative;
-  z-index: 1;
-  -ms-flex: 0 0 auto;
   flex: 0 0 auto;
-  border: 1px solid #eee;
+  border: 1px solid #ddd;
   cursor: pointer;
   border-radius: 10px;
+  padding: 1.25rem 0 1rem 0;
 }
 .file-item:hover,
 .file-item.focused {
@@ -85,14 +98,20 @@ body {
   overflow-wrap: break-word;
   white-space: normal;
   padding: 0.5rem;
-  -webkit-line-clamp: 2; /* Number of lines to display before truncating */
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 .file-manager-col-view .file-item {
   margin: 0 0.25rem 0.25rem 0;
   padding: 1.25rem 0 1rem 0;
-  /* width: 9rem; */
+  display: flex;
+  flex-direction: column;
   text-align: center;
+  justify-content: space-between;
+}
+.file-manager-col-view .file-item-tags {
+  justify-content: center;
+  margin-top: 1rem;
 }
 [dir="rtl"] .file-manager-col-view .file-item {
   margin-right: 0;
@@ -142,13 +161,30 @@ body {
 }
 .file-manager-row-view .file-manager-row-header,
 .file-manager-row-view .file-item {
-  display: -ms-flexbox;
   display: flex;
-  -ms-flex-align: center;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 0.8rem;
+  padding: 0.5rem 0.5rem 1rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+.file-manager-row-view .file-item-info {
+  display: flex;
   align-items: center;
-  margin: 0 0 0.125rem 0;
-  padding: 0.25rem 3rem 0.25rem 2.25em;
   width: 100%;
+  padding: 0.5rem 0;
+}
+.file-manager-row-view .file-item-tags {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.file-manager-row-view .file-item-tags-wrapper {
+  width: 100%;
+  padding: 0 0 0 3rem;
+  display: flex;
+  align-items: center;
 }
 [dir="rtl"] .file-manager-row-view .file-manager-row-header,
 [dir="rtl"] .file-manager-row-view .file-item {
@@ -158,7 +194,7 @@ body {
 .file-manager-row-view .file-item-img,
 .file-manager-row-view .file-item-icon {
   display: block;
-  margin: 0 1rem;
+  margin: 0 0 0 1rem;
   width: 3rem;
   height: 3rem;
   text-align: center;
@@ -170,10 +206,7 @@ body {
 }
 .file-manager-row-view .file-item-checkbox,
 .file-manager-row-view .file-item-actions {
-  position: absolute;
-  top: 50%;
-  -webkit-transform: translateY(-50%);
-  transform: translateY(-50%);
+  margin-right: 1rem;
 }
 .file-manager-row-view .file-item-checkbox {
   left: 10px;
@@ -190,16 +223,15 @@ body {
   left: 10px;
 }
 .file-manager-row-view .file-item-changed {
-  display: none;
   margin-left: auto;
-  width: 10rem;
+  margin-right: 1.5rem;
 }
 [dir="rtl"] .file-manager-row-view .file-item-changed {
   margin-right: auto;
   margin-left: 0;
 }
 .file-manager-row-view .file-item-name {
-  width: calc(100% - 4rem);
+  width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: normal;
@@ -210,7 +242,7 @@ body {
   font-weight: bold;
 }
 .file-manager-row-view .file-manager-row-header .file-item-name {
-  margin-left: 4rem;
+  margin-left: 5rem;
 }
 [dir="rtl"] .file-manager-row-view .file-manager-row-header .file-item-name {
   margin-right: 4rem;
@@ -227,12 +259,13 @@ body {
     display: block;
   }
   .light-style .file-manager-row-view .file-item-name {
-    width: calc(100% - 15rem);
+    width: calc(100% - 19rem);
   }
 }
 @media (min-width: 992px) {
   .light-style .file-manager-col-view .file-item-checkbox,
   .light-style .file-manager-col-view .file-item-actions {
+    margin-left: auto;
     opacity: 0;
   }
   .light-style .file-manager-col-view .file-item:hover .file-item-checkbox,
@@ -255,7 +288,7 @@ body {
     display: block;
   }
   .material-style .file-manager-row-view .file-item-name {
-    width: calc(100% - 15rem);
+    width: calc(100% - 17rem);
   }
 }
 @media (min-width: 992px) {
@@ -283,7 +316,7 @@ body {
     display: block;
   }
   .dark-style .file-manager-row-view .file-item-name {
-    width: calc(100% - 15rem);
+    width: calc(100% - 17rem);
   }
 }
 @media (min-width: 992px) {

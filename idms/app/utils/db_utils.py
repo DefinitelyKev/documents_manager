@@ -32,9 +32,9 @@ def extract_text_from_docx(path):
 
 def extract_text(path, file_type):
     try:
-        if file_type in [".pdf", ".jpeg", ".jpg", "png"]:
+        if file_type in ["pdf", "jpeg", "jpg", "png"]:
             return img_to_text(path)
-        elif file_type in [".doc", ".docx"]:
+        elif file_type in ["doc", "docx"]:
             return extract_text_from_docx(path)
         else:
             with open(path, "r", encoding="utf-8") as file:
@@ -45,9 +45,9 @@ def extract_text(path, file_type):
 
 
 def get_tags(file_type, abs_path):
-    # if file_type != "folder":
-    #     text = extract_text(abs_path, file_type)
-    #     return str([open_ai_model(text)])
+    if file_type != "folder":
+        text = extract_text(abs_path, file_type)
+        return str([open_ai_model(text)])
     return "[None]"
 
 

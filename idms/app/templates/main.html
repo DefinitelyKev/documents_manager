@@ -83,28 +83,37 @@
         {% for file_obj in files %}
         <div class="file-item">
           <div class="file-item-select-bg bg-primary"></div>
-          <label class="file-item-checkbox custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input" />
-            <span class="custom-control-label"></span>
-          </label>
-          <a href="{{ url_for('main', req_path=file_obj.rel_path) }}" class="no-underline">
-            <i class="file-item-icon far {{file_obj.icon}} text-secondary"></i>
-          </a>
-          <a href="{{ url_for('main', req_path=file_obj.rel_path) }}" class="file-item-name"> {{ file_obj.name }} </a>
-          <div class="file-item-changed">{{ file_obj.date_modified }}</div>
-          <div class="file-item-actions btn-group">
-            <button
-              type="button"
-              class="btn btn-default btn-sm rounded icon-btn borderless md-btn-flat hide-arrow dropdown-toggle"
-              data-toggle="dropdown"
-            >
-              <i class="ion ion-ios-more"></i>
-            </button>
-            <div class="dropdown-menu dropdown-menu-right">
-              <a class="dropdown-item" href="javascript:void(0)">Rename</a>
-              <a class="dropdown-item" href="javascript:void(0)">Move</a>
-              <a class="dropdown-item" href="javascript:void(0)">Copy</a>
-              <a class="dropdown-item" href="javascript:void(0)">Remove</a>
+          <div class="file-item-info">
+            <label class="file-item-checkbox custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" />
+              <span class="custom-control-label"></span>
+            </label>
+            <a href="{{ url_for('main', req_path=file_obj.rel_path) }}" class="no-underline">
+              <i class="file-item-icon far {{file_obj.icon}} text-secondary"></i>
+            </a>
+            <a href="{{ url_for('main', req_path=file_obj.rel_path) }}" class="file-item-name"> {{ file_obj.name }} </a>
+            <div class="file-item-changed">{{ file_obj.date_modified }}</div>
+            <div class="file-item-actions btn-group">
+              <button
+                type="button"
+                class="btn btn-default btn-sm rounded icon-btn borderless md-btn-flat hide-arrow dropdown-toggle"
+                data-toggle="dropdown"
+              >
+                <i class="ion ion-ios-more"></i>
+              </button>
+              <div class="dropdown-menu dropdown-menu-right">
+                <a class="dropdown-item" href="javascript:void(0)">Rename</a>
+                <a class="dropdown-item" href="javascript:void(0)">Move</a>
+                <a class="dropdown-item" href="javascript:void(0)">Copy</a>
+                <a class="dropdown-item" href="javascript:void(0)">Remove</a>
+              </div>
+            </div>
+          </div>
+          <div class="file-item-tags-wrapper">
+            <div class="file-item-tags">
+              <span class="tag badge badge-primary">Tag1</span>
+              <span class="tag badge badge-secondary">Tag2</span>
+              <span class="tag badge badge-success">Tag3</span>
             </div>
           </div>
         </div>
@@ -115,10 +124,20 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function () {
+        var selectedView = localStorage.getItem("file-manager-view") || "file-manager-col-view";
+        var container = $(".file-manager-container");
+        container.removeClass("file-manager-col-view file-manager-row-view").addClass(selectedView);
+        $('input[name="file-manager-view"][value="' + selectedView + '"]').prop("checked", true);
+
         $('input[name="file-manager-view"]').on("change", function () {
           var selectedView = $(this).val();
-          var container = $(".file-manager-container");
+          localStorage.setItem("file-manager-view", selectedView);
           container.removeClass("file-manager-col-view file-manager-row-view").addClass(selectedView);
+          if (selectedView === "file-manager-row-view") {
+            $(".file-item-tags-wrapper").addClass("file-manager-row-view");
+          } else {
+            $(".file-item-tags-wrapper").removeClass("file-manager-row-view");
+          }
         });
       });
     </script>
