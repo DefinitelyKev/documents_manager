@@ -159,7 +159,18 @@ body {
 .file-manager-col-view .file-item-changed {
   display: none;
 }
-.file-manager-row-view .file-manager-row-header,
+.file-manager-col-view .file-item-size {
+  display: none;
+}
+.file-manager-row-view .file-manager-row-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.8rem;
+  padding: 1rem 11rem 0.8rem 1rem;
+  border: 1px solid #ddd;
+  font-weight: bold;
+  border-radius: 5px;
+}
 .file-manager-row-view .file-item {
   display: flex;
   flex-direction: column;
@@ -168,12 +179,13 @@ body {
   padding: 0.5rem 0.5rem 1rem 1rem;
   border: 1px solid #ddd;
   border-radius: 5px;
+  flex-grow: 1;
 }
 .file-manager-row-view .file-item-info {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 0.5rem 0;
+  padding: 0.2rem 0;
 }
 .file-manager-row-view .file-item-tags {
   display: flex;
@@ -202,7 +214,8 @@ body {
   line-height: 3rem;
 }
 .file-manager-row-view .file-item-level-up {
-  font-size: 1rem;
+  margin-left: 2.7rem;
+  font-size: 1.5rem;
 }
 .file-manager-row-view .file-item-checkbox,
 .file-manager-row-view .file-item-actions {
@@ -216,15 +229,21 @@ body {
   left: auto;
 }
 .file-manager-row-view .file-item-actions {
-  right: 10px;
+  margin-left: 1rem;
+  display: flex;
+  align-items: center;
 }
 [dir="rtl"] .file-manager-row-view .file-item-actions {
   right: auto;
   left: 10px;
 }
-.file-manager-row-view .file-item-changed {
+.file-manager-row-view .file-item-size {
   margin-left: auto;
-  margin-right: 1.5rem;
+  margin-right: 2rem;
+}
+.file-manager-row-view .file-item-changed {
+  margin-left: 2rem;
+  text-align: right;
 }
 [dir="rtl"] .file-manager-row-view .file-item-changed {
   margin-right: auto;
@@ -242,11 +261,14 @@ body {
   font-weight: bold;
 }
 .file-manager-row-view .file-manager-row-header .file-item-name {
-  margin-left: 5rem;
+  margin-left: 5.5rem;
 }
 [dir="rtl"] .file-manager-row-view .file-manager-row-header .file-item-name {
   margin-right: 4rem;
   margin-left: 0;
+}
+.file-manager-row-view .file-manager-row-header .file-item-changed {
+  text-align: right;
 }
 .light-style .file-item-name {
   color: #4e5155 !important;
@@ -259,7 +281,7 @@ body {
     display: block;
   }
   .light-style .file-manager-row-view .file-item-name {
-    width: calc(100% - 19rem);
+    width: calc(100% - 28rem);
   }
 }
 @media (min-width: 992px) {

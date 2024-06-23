@@ -48,7 +48,7 @@ def get_tags(file_type, abs_path):
     if file_type != "folder":
         text = extract_text(abs_path, file_type)
         return str([open_ai_model(text)])
-    return "[None]"
+    return "['None']"
 
 
 def get_icons(file_type):
@@ -78,7 +78,7 @@ def get_obj_from_scan(root, name):
         rel_path=rel_path,
         date_modified=m_time,
         icon=icon,
-        tags="[None]",
+        tags="['None']",
     )
 
 

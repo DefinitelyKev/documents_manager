@@ -19,18 +19,21 @@ chosen_folder_path = load_chosen_folder_path()
 @app.route("/main/<path:req_path>", methods=["GET", "POST"])
 def main(req_path):
     global chosen_folder_path
+    if not chosen_folder_path:
+        return render_template("main.html")
+
     abs_path = os.path.join(chosen_folder_path, req_path).replace("\\", "/") if req_path else chosen_folder_path
 
     if not os.path.exists(abs_path):
-        return redirect(url_for("upload"))
+        return render_template("main.html")
 
     if os.path.isfile(abs_path):
         img_to_text(abs_path)
         return send_file(abs_path)
 
     if abs_path == chosen_folder_path:
+        delete_unused_records()
         upload_documents_to_db()
-        # delete_unused_records()
 
     documents = Document.query.filter(Document.abs_path.like(f"{abs_path}%")).all()
     direct_children = [doc for doc in documents if os.path.dirname(doc.abs_path) == abs_path]
@@ -50,10 +53,13 @@ def main(req_path):
 
     parent_dir = os.path.dirname(req_path)
 
+    for i in direct_children:
+        i.tags = ast.literal_eval(i.tags)
+
     return render_template("main.html", files=direct_children, dir_path=path_list, parent_dir=parent_dir)
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/upload/", methods=["GET", "POST"])
 def upload():
     if request.method == "POST":
         global chosen_folder_path, files_processed
@@ -64,52 +70,12 @@ def upload():
         del root
         chosen_folder_path = file_name
         save_chosen_folder_path(chosen_folder_path)
-        return redirect(url_for("dir_view"))
-
-    return render_template("upload.html")
-
-
-@app.route("/dir_view/", methods=["GET", "POST"], defaults={"req_path": ""})
-@app.route("/dir_view/<path:req_path>", methods=["GET", "POST"])
-def dir_view(req_path):
-    global chosen_folder_path
-    abs_path = os.path.join(chosen_folder_path, req_path).replace("\\", "/") if req_path else chosen_folder_path
-
-    if not os.path.exists(abs_path):
-        return redirect(url_for("upload"))
-
-    if os.path.isfile(abs_path):
-        img_to_text(abs_path)
-        return send_file(abs_path)
-
-    if abs_path == chosen_folder_path:
-        upload_documents_to_db()
-        delete_unused_records()
-
-    documents = Document.query.filter(Document.abs_path.like(f"{abs_path}%")).all()
-    direct_children = [doc for doc in documents if os.path.dirname(doc.abs_path) == abs_path]
-
-    path_list = []
-    dir_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
-    directories = dir_path.split("/")
-
-    for i in range(len(directories)):
-        sub_path = "/".join(directories[: i + 1])
-        path_list.append((directories[i], sub_path))
-
-    if dir_path == ".":
-        path_list[0] = (f"{os.path.basename(chosen_folder_path)}", ".")
-    else:
-        path_list = [(f"{os.path.basename(chosen_folder_path)}", ".")] + path_list
-
-    parent_dir = os.path.dirname(req_path)
-    print(parent_dir)
-
-    return render_template("dir_view.html", files=direct_children, dir_path=path_list)
+        return redirect(url_for("main"))
+    return render_template("main.html")
 
 
-@app.route("/add_file/", methods=["GET", "POST"])
-def add_file():
+@app.route("/check_database/", methods=["GET", "POST"])
+def check_database():
     global files_processed
     documents = Document.query.all()
 
@@ -118,9 +84,9 @@ def add_file():
         if sort_req is not None:
             sort_files()
             files_processed = False
-            return redirect(url_for("dir_view"))
+            return redirect(url_for("main"))
 
-    return render_template("add_file.html", documents=documents)
+    return render_template("check_database.html", documents=documents)
 
 
 @app.route("/delete_file/", methods=["GET", "POST"])
@@ -133,16 +99,18 @@ def delete_file():
             if document:
                 db.session.delete(document)
                 db.session.commit()
-                return redirect(url_for("add_file"))
+                return redirect(url_for("check_database"))
             else:
                 return 404
 
         del_all = request.form.get("deleteAllInput")
         if del_all is not None:
             try:
+                global chosen_folder_path
                 Document.query.delete()
                 db.session.commit()
-                return redirect(url_for("add_file"))
+                chosen_folder_path = None
+                return redirect(url_for("check_database"))
             except Exception as e:
                 db.session.rollback()
                 return f"An error occurred: {str(e)}", 500

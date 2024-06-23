@@ -19,7 +19,7 @@ def sort_files():
             tag_to_paths[tag].append(doc.abs_path)
 
     for tag, paths in tag_to_paths.items():
-        if tag == "none":
+        if tag == "None":
             continue
 
         tag_folder_path = os.path.join(routes.chosen_folder_path, secure_filename(tag))

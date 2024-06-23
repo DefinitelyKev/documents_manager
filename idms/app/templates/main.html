@@ -2,12 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-
-    <title>check file manager - Bootdey.com</title>
+    <title>File Manager</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css"
@@ -27,7 +26,7 @@
       <div class="container-m-nx container-m-ny bg-lightest mb-3">
         <ol class="breadcrumb text-big container-p-x py-3 m-0">
           {% for name, path in dir_path %}
-          <li class="breadcrumb-item {% if loop.last %} active {% endif %}">
+          <li class="breadcrumb-item {% if loop.last %}active{% endif %}">
             {% if not loop.last %}
             <a href="{{ url_for('main', req_path=path) }}">{{ name }}</a>
             {% else %} {{ name }} {% endif %}
@@ -35,11 +34,14 @@
           {% endfor %}
         </ol>
         <hr class="m-0" />
-        <div class="file-manager-actions container-p-x py-2">
+        <div class="file-manager-actions container-p-x py-2 d-flex justify-content-between">
           <div>
-            <button type="button" class="btn btn-primary mr-2">
-              <i class="ion ion-md-cloud-upload"></i>&nbsp; Upload
-            </button>
+            <form action="/upload/" method="POST" enctype="multipart/form-data">
+              <input type="file" name="file" id="file-input" class="d-none" />
+              <button type="submit" class="btn btn-primary mr-2" id="submit-button">
+                <i class="ion ion-md-cloud-upload"></i>&nbsp; Upload
+              </button>
+            </form>
             <button type="button" class="btn btn-secondary icon-btn mr-2" disabled>
               <i class="ion ion-md-cloud-download"></i>
             </button>
@@ -53,6 +55,9 @@
                 <a class="dropdown-item" href="javascript:void(0)">Remove</a>
               </div>
             </div>
+            <a href="{{url_for('check_database')}}"
+              ><button type="submit" class="btn btn-primary mr-2" id="submit-button">Check Database</button></a
+            >
           </div>
           <div>
             <div class="btn-group btn-group-toggle" data-toggle="buttons">
@@ -72,13 +77,16 @@
       <div class="file-manager-container file-manager-col-view">
         <div class="file-manager-row-header">
           <div class="file-item-name pb-2">Filename</div>
+          <div class="file-item-size pb-2">Size</div>
           <div class="file-item-changed pb-2">Changed</div>
         </div>
         <div class="file-item">
-          <a href="{{ url_for('main', req_path=parent_dir) }}" class="no-underline">
-            <div class="file-item-icon file-item-level-up fas fa-level-up-alt text-secondary"></div>
-          </a>
-          <a href="{{ url_for('main', req_path=parent_dir) }}" class="file-item-name"> .. </a>
+          <div class="file-item-info">
+            <a href="{{ url_for('main', req_path=parent_dir) }}" class="no-underline">
+              <div class="file-item-icon file-item-level-up fas fa-level-up-alt text-secondary"></div>
+            </a>
+            <a href="{{ url_for('main', req_path=parent_dir) }}" class="file-item-name"> .. </a>
+          </div>
         </div>
         {% for file_obj in files %}
         <div class="file-item">
@@ -92,6 +100,7 @@
               <i class="file-item-icon far {{file_obj.icon}} text-secondary"></i>
             </a>
             <a href="{{ url_for('main', req_path=file_obj.rel_path) }}" class="file-item-name"> {{ file_obj.name }} </a>
+            <div class="file-item-size">{{ file_obj.size }}</div>
             <div class="file-item-changed">{{ file_obj.date_modified }}</div>
             <div class="file-item-actions btn-group">
               <button
@@ -111,9 +120,10 @@
           </div>
           <div class="file-item-tags-wrapper">
             <div class="file-item-tags">
-              <span class="tag badge badge-primary">Tag1</span>
-              <span class="tag badge badge-secondary">Tag2</span>
+              {% for tag in file_obj.tags %}
+              <span class="tag badge badge-primary">{{ tag }}</span>
               <span class="tag badge badge-success">Tag3</span>
+              {% endfor %}
             </div>
           </div>
         </div>
@@ -122,24 +132,6 @@
     </div>
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript">
-      $(document).ready(function () {
-        var selectedView = localStorage.getItem("file-manager-view") || "file-manager-col-view";
-        var container = $(".file-manager-container");
-        container.removeClass("file-manager-col-view file-manager-row-view").addClass(selectedView);
-        $('input[name="file-manager-view"][value="' + selectedView + '"]').prop("checked", true);
-
-        $('input[name="file-manager-view"]').on("change", function () {
-          var selectedView = $(this).val();
-          localStorage.setItem("file-manager-view", selectedView);
-          container.removeClass("file-manager-col-view file-manager-row-view").addClass(selectedView);
-          if (selectedView === "file-manager-row-view") {
-            $(".file-item-tags-wrapper").addClass("file-manager-row-view");
-          } else {
-            $(".file-item-tags-wrapper").removeClass("file-manager-row-view");
-          }
-        });
-      });
-    </script>
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
   </body>
 </html>

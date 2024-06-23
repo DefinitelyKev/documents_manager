@@ -26,7 +26,7 @@ def open_ai_model(text):
             {
                 "role": "user",
                 "content": f"""
-                given this text below and given list of document types, allocate a tag for this document that suits the document the most. Answer with only the tag:
+                given this text below and given list of document types, allocate a tag for this document that suits the document the most. If a tag cannot be allocated, give tag as 'Other'. Answer with only the tag:
                 {text}
 
                 Here is the list of most common document types, choose one from here:
@@ -87,9 +87,9 @@ def get_time_stamp_string(t_sec) -> str:
 def get_readable_byte_size(num, suffix="B") -> str:
     for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
         if abs(num) < 1024.0:
-            return "%3.1f%s%s" % (num, unit, suffix)
+            return "%3.1f %s%s" % (num, unit, suffix)
         num /= 1024.0
-    return "%.1f%s%s" % (num, "Y", suffix)
+    return "%.1f %s%s" % (num, "Y", suffix)
 
 
 common_document_types = [
