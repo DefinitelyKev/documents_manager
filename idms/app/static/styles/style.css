@@ -74,7 +74,7 @@ body {
   border-color: rgba(255, 255, 255, 0.2);
 }
 .file-item-checkbox {
-  margin: 0 !important;
+  margin: 0;
 }
 .file-item-select-bg {
   position: absolute;
@@ -135,7 +135,7 @@ body {
   top: 6px;
 }
 .file-manager-col-view .file-item-checkbox {
-  left: 6px;
+  left: 10px;
 }
 [dir="rtl"] .file-manager-col-view .file-item-checkbox {
   right: 6px;
@@ -285,9 +285,10 @@ body {
   }
 }
 @media (min-width: 992px) {
-  .light-style .file-manager-col-view .file-item-checkbox,
+  .light-style .file-manager-col-view .file-item-checkbox {
+    opacity: 1;
+  }
   .light-style .file-manager-col-view .file-item-actions {
-    margin-left: auto;
     opacity: 0;
   }
   .light-style .file-manager-col-view .file-item:hover .file-item-checkbox,
@@ -295,7 +296,9 @@ body {
   .light-style .file-manager-col-view .file-item.selected .file-item-checkbox,
   .light-style .file-manager-col-view .file-item:hover .file-item-actions,
   .light-style .file-manager-col-view .file-item.focused .file-item-actions,
-  .light-style .file-manager-col-view .file-item.selected .file-item-actions {
+  .light-style .file-manager-col-view .file-item.selected .file-item-actions,
+  .light-style .file-manager-col-view .file-item-checkbox:checked,
+  .light-style .file-manager-col-view .file-item-actions:checked {
     opacity: 1;
   }
 }
@@ -323,7 +326,9 @@ body {
   .material-style .file-manager-col-view .file-item.selected .file-item-checkbox,
   .material-style .file-manager-col-view .file-item:hover .file-item-actions,
   .material-style .file-manager-col-view .file-item.focused .file-item-actions,
-  .material-style .file-manager-col-view .file-item.selected .file-item-actions {
+  .material-style .file-manager-col-view .file-item.selected .file-item-actions,
+  .material-style .file-manager-col-view .file-item-checkbox:checked,
+  .material-style .file-manager-col-view .file-item-actions:checked {
     opacity: 1;
   }
 }
@@ -351,7 +356,9 @@ body {
   .dark-style .file-manager-col-view .file-item.selected .file-item-checkbox,
   .dark-style .file-manager-col-view .file-item:hover .file-item-actions,
   .dark-style .file-manager-col-view .file-item.focused .file-item-actions,
-  .dark-style .file-manager-col-view .file-item.selected .file-item-actions {
+  .dark-style .file-manager-col-view .file-item.selected .file-item-actions,
+  .dark-style .file-manager-col-view .file-item-checkbox:checked,
+  .dark-style .file-manager-col-view .file-item-actions:checked {
     opacity: 1;
   }
 }

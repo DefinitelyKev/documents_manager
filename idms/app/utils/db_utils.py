@@ -47,6 +47,7 @@ def extract_text(path, file_type):
 def get_tags(file_type, abs_path):
     if file_type != "folder":
         text = extract_text(abs_path, file_type)
+        print("open ai model was used")
         return str([open_ai_model(text)])
     return "['None']"
 
@@ -91,10 +92,7 @@ def is_modified_document(document, document_obj):
 
 
 def add_or_update_docment(documents_to_add, documents_to_update, root, name):
-    document_obj = get_obj_from_scan(
-        root,
-        name,
-    )
+    document_obj = get_obj_from_scan(root, name)
 
     document = Document.query.filter_by(id=document_obj.id).first()
     if document:

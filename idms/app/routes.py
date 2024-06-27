@@ -15,8 +15,8 @@ from app import app, db
 chosen_folder_path = load_chosen_folder_path()
 
 
-@app.route("/main/", methods=["GET", "POST"], defaults={"req_path": ""})
-@app.route("/main/<path:req_path>", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"], defaults={"req_path": ""})
+@app.route("/<path:req_path>", methods=["GET", "POST"])
 def main(req_path):
     global chosen_folder_path
     if not chosen_folder_path:
@@ -32,8 +32,8 @@ def main(req_path):
         return send_file(abs_path)
 
     if abs_path == chosen_folder_path:
-        delete_unused_records()
         upload_documents_to_db()
+        delete_unused_records()
 
     documents = Document.query.filter(Document.abs_path.like(f"{abs_path}%")).all()
     direct_children = [doc for doc in documents if os.path.dirname(doc.abs_path) == abs_path]
@@ -89,8 +89,29 @@ def check_database():
     return render_template("check_database.html", documents=documents)
 
 
-@app.route("/delete_file/", methods=["GET", "POST"])
+@app.route("/delete/", methods=["POST"])
 def delete_file():
+    absolute_file_path = request.form.get("absoluteFilePath")
+
+    if os.path.exists(absolute_file_path):
+        try:
+            os.remove(absolute_file_path)
+
+            document = Document.query.filter_by(abs_path=absolute_file_path).first()
+            if document:
+                db.session.delete(document)
+                db.session.commit()
+
+            return "File deleted successfully", 200
+        except Exception as e:
+            db.session.rollback()
+            return f"Error deleting file: {str(e)}", 500
+
+    return "File not found", 404
+
+
+@app.route("/delete_file/", methods=["GET", "POST"])
+def delete_file1():
     if request.method == "POST":
         del_by_id = request.form.get("deleteInput")
         if del_by_id is not None:
@@ -125,6 +146,29 @@ def search():
         results = Document.query.msearch(query).all()
         return render_template("search_result.html", results=results)
     return render_template("search.html")
+
+
+@app.route("/rename/", methods=["POST"])
+def rename_file():
+    current_file_path = request.form["currentFilePath"]
+    new_file_name = request.form["newFileName"]
+    directory = os.path.dirname(current_file_path)
+    new_file_path = os.path.join(directory, new_file_name)
+
+    if os.path.exists(current_file_path):
+        os.rename(current_file_path, new_file_path)
+    return redirect(url_for("main", req_path=directory))
+
+
+@app.route("/move/", methods=["POST"])
+def move_file():
+    absolute_file_path = request.form["absoluteFilePath"]
+    destination_path = request.form["destinationPath"]
+
+    if os.path.exists(absolute_file_path) and os.path.isdir(destination_path):
+        new_file_path = os.path.join(destination_path, os.path.basename(absolute_file_path))
+        os.rename(absolute_file_path, new_file_path)
+    return redirect(url_for("main", req_path=os.path.dirname(absolute_file_path)))
 
 
 if __name__ == "__main__":
