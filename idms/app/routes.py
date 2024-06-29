@@ -117,9 +117,30 @@ def move_file():
     if os.path.exists(absolute_file_path) and os.path.isdir(destination_path):
         new_file_path = os.path.join(destination_path, os.path.basename(absolute_file_path))
         os.rename(absolute_file_path, new_file_path)
+
         upload_documents_to_db()
         return jsonify({"destination_path": destination_path}), 200
+
     return jsonify({"error": "Invalid paths provided"}), 400
+
+
+@app.route("/move_multiple/", methods=["POST"])
+def move_multiple_files():
+    data = request.get_json()
+    absolute_file_paths = data["absoluteFilePaths"]
+    destination_path = data["destinationPath"]
+
+    moved_files = []
+    if os.path.isdir(destination_path):
+        for absolute_file_path in absolute_file_paths:
+            if os.path.exists(absolute_file_path):
+                new_file_path = os.path.join(destination_path, os.path.basename(absolute_file_path))
+                os.rename(absolute_file_path, new_file_path)
+                moved_files.append(new_file_path)
+
+        upload_documents_to_db()
+        return jsonify({"destination_path": destination_path, "moved_files": moved_files}), 200
+    return jsonify({"error": "Invalid destination path"}), 400
 
 
 @app.route("/delete/", methods=["POST"])
@@ -139,6 +160,27 @@ def delete_file():
             db.session.rollback()
             return f"Error deleting file: {str(e)}", 500
     return "File not found", 404
+
+
+@app.route("/delete_multiple/", methods=["POST"])
+def delete_multiple_files():
+    data = request.get_json()
+    absolute_file_paths = data["absoluteFilePaths"]
+
+    deleted_files = []
+    for absolute_file_path in absolute_file_paths:
+        if os.path.exists(absolute_file_path):
+            try:
+                os.remove(absolute_file_path)
+                document = Document.query.filter_by(abs_path=absolute_file_path).first()
+                if document:
+                    db.session.delete(document)
+                    db.session.commit()
+                deleted_files.append(absolute_file_path)
+            except Exception as e:
+                db.session.rollback()
+                return jsonify({"error": f"Error deleting file: {str(e)}"}), 500
+    return jsonify({"deleted_files": deleted_files}), 200
 
 
 if __name__ == "__main__":
