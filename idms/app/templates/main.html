@@ -168,16 +168,35 @@
             <div class="modal-body">
               <div class="form-group">
                 <label for="destinationPath" class="col-form-label">Destination Path:</label>
-                <input type="text" class="form-control" id="destinationPath" name="destinationPath" />
+                <input type="text" class="form-control" id="destinationPath" name="destinationPath" readonly />
                 <input type="hidden" id="moveCurrentFilePath" name="currentFilePath" />
                 <input type="hidden" id="moveAbsoluteFilePath" name="absoluteFilePath" />
               </div>
+              <button type="button" class="btn btn-secondary" id="chooseDirectoryBtn">Choose Directory</button>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
               <button type="submit" class="btn btn-primary">Move</button>
             </div>
           </form>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="successModalLabel">Success</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="successMessage" style="word-wrap: break-word"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
         </div>
       </div>
     </div>

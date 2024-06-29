@@ -19,15 +19,6 @@ $(document).ready(function () {
     $("#renameModal").modal("show");
   });
 
-  $('.dropdown-item:contains("Move")').on("click", function () {
-    var currentFilePath = $(this).closest(".file-item").find(".file-item-name").attr("href");
-    var absoluteFilePath = $(this).closest(".file-item").data("absolute-path");
-
-    $("#moveCurrentFilePath").val(currentFilePath);
-    $("#moveAbsoluteFilePath").val(absoluteFilePath);
-    $("#moveModal").modal("show");
-  });
-
   $('.dropdown-menu a[href="javascript:void(0)"]:contains("Remove")').on("click", function () {
     var fileItem = $(this).closest(".file-item");
     var absolutePath = fileItem.data("absolute-path");
@@ -45,8 +36,6 @@ $(document).ready(function () {
       method: "POST",
       data: { absoluteFilePath: absolutePath },
       success: function (response) {
-        // Handle success response if needed
-        // For example, remove the file item from the UI
         $('[data-absolute-path="' + absolutePath + '"]').remove();
         $("#confirmDeleteModal").modal("hide");
       },
@@ -55,5 +44,46 @@ $(document).ready(function () {
         $("#confirmDeleteModal").modal("hide");
       },
     });
+  });
+
+  $('.dropdown-menu a[href="javascript:void(0)"]:contains("Move")').on("click", function () {
+    var currentFilePath = $(this).closest(".file-item").data("absolute-path");
+    $("#moveAbsoluteFilePath").val(currentFilePath);
+    $("#moveModal").modal("show");
+  });
+
+  $("#chooseDirectoryBtn").on("click", function () {
+    fetch("/choose_directory/")
+      .then((response) => response.json())
+      .then((data) => {
+        $("#destinationPath").val(data.chosen_directory);
+      });
+  });
+
+  $("#moveForm").on("submit", function (event) {
+    event.preventDefault();
+    const absoluteFilePath = $("#moveAbsoluteFilePath").val();
+    const destinationPath = $("#destinationPath").val();
+
+    fetch("/move/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        absoluteFilePath: absoluteFilePath,
+        destinationPath: destinationPath,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        $("#moveModal").modal("hide");
+        $("#successMessage").text("File moved to: " + data.destination_path);
+        $("#successModal").modal("show");
+      });
+  });
+
+  $("#successModal").on("hidden.bs.modal", function () {
+    location.reload();
   });
 });

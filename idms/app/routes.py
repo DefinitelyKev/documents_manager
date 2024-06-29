@@ -1,8 +1,5 @@
-from flask import Flask, render_template, abort, send_file, request, redirect, url_for, flash
+from flask import Flask, render_template, abort, send_file, request, redirect, url_for, flash, jsonify
 from werkzeug.utils import secure_filename
-from pathlib import Path
-from tkinter import filedialog
-from tkinter import *
 import os
 
 from app.utils.utils import *
@@ -35,40 +32,17 @@ def main(req_path):
         upload_documents_to_db()
         delete_unused_records()
 
-    documents = Document.query.filter(Document.abs_path.like(f"{abs_path}%")).all()
-    direct_children = [doc for doc in documents if os.path.dirname(doc.abs_path) == abs_path]
-
-    path_list = []
-    dir_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
-    directories = dir_path.split("/")
-
-    for i in range(len(directories)):
-        sub_path = "/".join(directories[: i + 1])
-        path_list.append((directories[i], sub_path))
-
-    if dir_path == ".":
-        path_list[0] = (f"{os.path.basename(chosen_folder_path)}", ".")
-    else:
-        path_list = [(f"{os.path.basename(chosen_folder_path)}", ".")] + path_list
-
-    parent_dir = os.path.dirname(req_path)
-
-    for i in direct_children:
-        i.tags = ast.literal_eval(i.tags)
-
-    return render_template("main.html", files=direct_children, dir_path=path_list, parent_dir=parent_dir)
+    files = get_children_dir(Document, abs_path)
+    parent_dir = get_parent_dir(req_path)
+    path_list = get_path_list(chosen_folder_path, abs_path)
+    return render_template("main.html", files=files, parent_dir=parent_dir, dir_path=path_list)
 
 
 @app.route("/upload/", methods=["GET", "POST"])
 def upload():
     if request.method == "POST":
         global chosen_folder_path, files_processed
-        root = Tk()
-        root.attributes("-topmost", True, "-alpha", 0)
-        file_name = filedialog.askdirectory()
-        root.destroy()
-        del root
-        chosen_folder_path = file_name
+        chosen_folder_path = open_up_tk_dir()
         save_chosen_folder_path(chosen_folder_path)
         return redirect(url_for("main"))
     return render_template("main.html")
@@ -89,41 +63,9 @@ def check_database():
     return render_template("check_database.html", documents=documents)
 
 
-@app.route("/delete/", methods=["POST"])
-def delete_file():
-    absolute_file_path = request.form.get("absoluteFilePath")
-
-    if os.path.exists(absolute_file_path):
-        try:
-            os.remove(absolute_file_path)
-
-            document = Document.query.filter_by(abs_path=absolute_file_path).first()
-            if document:
-                db.session.delete(document)
-                db.session.commit()
-
-            return "File deleted successfully", 200
-        except Exception as e:
-            db.session.rollback()
-            return f"Error deleting file: {str(e)}", 500
-
-    return "File not found", 404
-
-
-@app.route("/delete_file/", methods=["GET", "POST"])
-def delete_file1():
+@app.route("/delete_all/", methods=["GET", "POST"])
+def delete_all():
     if request.method == "POST":
-        del_by_id = request.form.get("deleteInput")
-        if del_by_id is not None:
-            document = Document.query.get(del_by_id)
-
-            if document:
-                db.session.delete(document)
-                db.session.commit()
-                return redirect(url_for("check_database"))
-            else:
-                return 404
-
         del_all = request.form.get("deleteAllInput")
         if del_all is not None:
             try:
@@ -160,15 +102,43 @@ def rename_file():
     return redirect(url_for("main", req_path=directory))
 
 
+@app.route("/choose_directory/", methods=["GET"])
+def choose_directory():
+    folder_selected = open_up_tk_dir()
+    return jsonify({"chosen_directory": folder_selected})
+
+
 @app.route("/move/", methods=["POST"])
 def move_file():
-    absolute_file_path = request.form["absoluteFilePath"]
-    destination_path = request.form["destinationPath"]
+    data = request.get_json()
+    absolute_file_path = data["absoluteFilePath"]
+    destination_path = data["destinationPath"]
 
     if os.path.exists(absolute_file_path) and os.path.isdir(destination_path):
         new_file_path = os.path.join(destination_path, os.path.basename(absolute_file_path))
         os.rename(absolute_file_path, new_file_path)
-    return redirect(url_for("main", req_path=os.path.dirname(absolute_file_path)))
+        upload_documents_to_db()
+        return jsonify({"destination_path": destination_path}), 200
+    return jsonify({"error": "Invalid paths provided"}), 400
+
+
+@app.route("/delete/", methods=["POST"])
+def delete_file():
+    absolute_file_path = request.form.get("absoluteFilePath")
+
+    if os.path.exists(absolute_file_path):
+        try:
+            os.remove(absolute_file_path)
+            document = Document.query.filter_by(abs_path=absolute_file_path).first()
+            if document:
+                db.session.delete(document)
+                db.session.commit()
+
+            return "File deleted successfully", 200
+        except Exception as e:
+            db.session.rollback()
+            return f"Error deleting file: {str(e)}", 500
+    return "File not found", 404
 
 
 if __name__ == "__main__":

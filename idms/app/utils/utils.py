@@ -8,6 +8,9 @@ from openai import OpenAI
 import asyncio
 import aiohttp
 from aiohttp import ClientSession
+import ast
+from tkinter import filedialog
+from tkinter import *
 
 CONFIG_FILE_PATH = "app/utils/chosen_file_path.txt"
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -90,6 +93,47 @@ def get_readable_byte_size(num, suffix="B") -> str:
             return "%3.1f %s%s" % (num, unit, suffix)
         num /= 1024.0
     return "%.1f %s%s" % (num, "Y", suffix)
+
+
+def open_up_tk_dir():
+    root = Tk()
+    root.attributes("-topmost", True, "-alpha", 0)
+    file_name = filedialog.askdirectory()
+    root.destroy()
+    del root
+
+    return file_name
+
+
+def get_children_dir(Document, abs_path):
+    documents = Document.query.filter(Document.abs_path.like(f"{abs_path}%")).all()
+    direct_children = [doc for doc in documents if os.path.dirname(doc.abs_path) == abs_path]
+
+    for child in direct_children:
+        child.tags = ast.literal_eval(child.tags)
+
+    return direct_children
+
+
+def get_parent_dir(req_path):
+    return os.path.dirname(req_path)
+
+
+def get_path_list(chosen_folder_path, abs_path):
+    path_list = []
+    dir_path = os.path.relpath(abs_path, chosen_folder_path).replace("\\", "/")
+    directories = dir_path.split("/")
+
+    for i in range(len(directories)):
+        sub_path = "/".join(directories[: i + 1])
+        path_list.append((directories[i], sub_path))
+
+    if dir_path == ".":
+        path_list[0] = (f"{os.path.basename(chosen_folder_path)}", ".")
+    else:
+        path_list = [(f"{os.path.basename(chosen_folder_path)}", ".")] + path_list
+
+    return path_list
 
 
 common_document_types = [
