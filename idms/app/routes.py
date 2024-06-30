@@ -41,25 +41,24 @@ def main(req_path):
 @app.route("/upload/", methods=["GET", "POST"])
 def upload():
     if request.method == "POST":
-        global chosen_folder_path, files_processed
+        global chosen_folder_path
         chosen_folder_path = open_up_tk_dir()
         save_chosen_folder_path(chosen_folder_path)
         return redirect(url_for("main"))
     return render_template("main.html")
 
 
+@app.route("/sort/", methods=["POST"])
+def sort():
+    sort_req = request.form.get("sortInput")
+    if sort_req is not None:
+        sort_files()
+        return redirect(url_for("main"))
+
+
 @app.route("/check_database/", methods=["GET", "POST"])
 def check_database():
-    global files_processed
     documents = Document.query.all()
-
-    if request.method == "POST":
-        sort_req = request.form.get("sortInput")
-        if sort_req is not None:
-            sort_files()
-            files_processed = False
-            return redirect(url_for("main"))
-
     return render_template("check_database.html", documents=documents)
 
 
