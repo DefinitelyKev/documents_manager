@@ -6,6 +6,26 @@ body {
   word-wrap: break-word;
 }
 
+.folder-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0px;
+}
+
+.folder-checkbox input {
+  margin-right: 5px; /* Padding between checkbox and folder icon */
+}
+
+.folder-btn-box {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  margin-right: 10px;
+}
+
 .no-underline:hover {
   text-decoration: none;
 }

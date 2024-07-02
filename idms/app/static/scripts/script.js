@@ -128,6 +128,7 @@ $(document).ready(function () {
 			$(this).val(currentVal);
 		});
 		toggleAddSortButton();
+		toggleFolderButtons();
 	}
 
 	function toggleAddSortButton() {
@@ -135,22 +136,35 @@ $(document).ready(function () {
 		$("#addSortCriterion").prop("disabled", selectedOptionsCount >= sortOptions.length);
 	}
 
+	function toggleFolderButtons() {
+		$("#sortList .list-group-item").each(function (index) {
+			const folderButton = $(this).find(".folder-btn");
+			if (index === 0 || $(this).prev().find(".folder-btn").is(":checked")) {
+				folderButton.prop("disabled", false);
+			} else {
+				folderButton.prop("disabled", true);
+				folderButton.prop("checked", false);
+			}
+		});
+	}
+
 	$("#addSortCriterion").on("click", function () {
 		const sortList = $("#sortList");
 		const sortItem = $('<li class="list-group-item d-flex justify-content-between align-items-center"></li>');
-		const select = $('<select class="form-control mr-2"><option value="" disabled selected>Select a criterion</option></select>');
+		const select = $('<select class="form-control mr-2" style="flex: 1 1 auto; width: auto;"><option value="" disabled selected>Select a criterion</option></select>');
 		const removeButton = $('<button type="button" class="btn btn-danger btn-sm"><i class="bi bi-x-lg"></i></button>');
+		const folderCheckbox = $('<label class="folder-checkbox ml-1 d-flex align-items-center"><div class="folder-btn-box"><input type="checkbox" class="folder-btn"><i class="bi bi-folder-plus"></i></div></label>');
 
 		sortOptions.forEach(option => {
 			select.append(`<option value="${option.toLowerCase().replace(" ", "_")}">${option}</option>`);
 		});
 
-		sortItem.append(select).append(removeButton);
+		sortItem.append(select).append(folderCheckbox).append(removeButton);
 		sortList.append(sortItem);
 
 		updateSortOptions();
 
-		sortList.sortable();
+		sortList.sortable({ handle: '.sort-handle' });
 
 		removeButton.on("click", function () {
 			sortItem.remove();
@@ -160,11 +174,16 @@ $(document).ready(function () {
 		select.on("change", function () {
 			updateSortOptions();
 		});
+
+		folderCheckbox.find('input').on("change", function () {
+			toggleFolderButtons();
+		});
 	});
 
 	$("#saveSortOrder").on("click", function () {
 		const sortOrder = $("#sortList select").map(function () { return $(this).val(); }).get();
-		console.log(sortOrder); // Handle the sort order
+		const folderCreation = $("#sortList .folder-btn").map(function () { return $(this).is(":checked"); }).get();
+		console.log(sortOrder, folderCreation); // Handle the sort order and folder creation
 		$("#sortModal").modal("hide");
 	});
 
