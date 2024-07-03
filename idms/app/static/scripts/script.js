@@ -31,6 +31,17 @@ $(document).ready(function () {
 		$("#confirmDeleteModal").modal("show");
 	});
 
+	$('.dropdown-menu a[href="javascript:void(0)"]:contains("No Sort")').on("click", function () {
+		const fileItem = $(this).closest(".file-item");
+		const absolutePath = fileItem.data("absolute-path");
+		const fileName = fileItem.find(".file-item-name").text().trim();
+
+		$("#confirmNoSortBtn").data("absolute-path", absolutePath);
+		$("#filesToNoSortList").empty().append(`<li>${fileName}</li>`);
+		$("#noSortMessage").text(`Are you sure you want to apply 'No Sort' to the following file?`);
+		$("#confirmNoSortModal").modal("show");
+	});
+
 	$("#confirmDeleteBtn").on("click", function () {
 		const absolutePath = $(this).data("absolute-path");
 		if (absolutePath) {
@@ -39,6 +50,18 @@ $(document).ready(function () {
 			const selectedFiles = $(this).data("selected-files");
 			if (selectedFiles && selectedFiles.length > 0) {
 				handleDelete(selectedFiles);
+			}
+		}
+	});
+
+	$("#confirmNoSortBtn").on("click", function () {
+		const absolutePath = $(this).data("absolute-path");
+		if (absolutePath) {
+			handleNoSort([absolutePath]);
+		} else {
+			const selectedFiles = $(this).data("selected-files");
+			if (selectedFiles && selectedFiles.length > 0) {
+				handleNoSort(selectedFiles);
 			}
 		}
 	});
@@ -89,6 +112,16 @@ $(document).ready(function () {
 			fileNames.forEach(name => $("#filesToDeleteList").append(`<li>${name}</li>`));
 			$("#confirmDeleteModal").modal("show");
 			$("#confirmDeleteBtn").data("selected-files", selectedFiles).data("absolute-path", null);
+		}
+	});
+
+	$("#noSort").on("click", function () {
+		const { selectedFiles, fileNames } = getSelectedFilesAndNames();
+		if (selectedFiles.length > 0) {
+			$("#filesToNoSortList").empty();
+			fileNames.forEach(name => $("#filesToNoSortList").append(`<li>${name}</li>`));
+			$("#confirmNoSortModal").modal("show");
+			$("#confirmNoSortBtn").data("selected-files", selectedFiles).data("absolute-path", null);
 		}
 	});
 
@@ -183,7 +216,19 @@ $(document).ready(function () {
 	$("#saveSortOrder").on("click", function () {
 		const sortOrder = $("#sortList select").map(function () { return $(this).val(); }).get();
 		const folderCreation = $("#sortList .folder-btn").map(function () { return $(this).is(":checked"); }).get();
-		console.log(sortOrder, folderCreation); // Handle the sort order and folder creation
+
+		$.ajax({
+			url: "/sort/",
+			method: "POST",
+			contentType: "application/json",
+			data: JSON.stringify({ sortOrder, folderCreation }),
+			success: function (response) {
+				console.log("Sort order saved successfully");
+			},
+			error: function (xhr, status, error) {
+				console.error("Error saving sort order:", error);
+			}
+		});
 		$("#sortModal").modal("hide");
 	});
 
@@ -218,6 +263,24 @@ $(document).ready(function () {
 					$("#confirmDeleteModal").modal("hide");
 				});
 		}
+	}
+
+	function handleNoSort(paths) {
+		fetch("/no_sort/", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ absoluteFilePaths: paths })
+		})
+			.then(response => response.json())
+			.then(() => {
+				$("#confirmNoSortModal").modal("hide");
+				$("#successMessage").text("No Sort applied to the selected files.");
+				$("#successModal").modal("show");
+			})
+			.catch(error => {
+				console.error("Error applying No Sort:", error);
+				$("#confirmNoSortModal").modal("hide");
+			});
 	}
 
 	function handleMove(paths, destinationPath) {

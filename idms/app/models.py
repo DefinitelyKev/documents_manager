@@ -12,6 +12,7 @@ class Document(db.Model):
     date_modified = db.Column(db.String(140), nullable=False)
     icon = db.Column(db.String(50), nullable=False)
     tags = db.Column(db.String(256))
+    sortable = db.Column(db.Boolean, default=True, nullable=False)
 
     __tablename__ = "document"
     __table_args__ = (db.UniqueConstraint("name", "type", "abs_path", name="uix_name_type_abs_path"),)

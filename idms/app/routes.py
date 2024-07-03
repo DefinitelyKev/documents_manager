@@ -50,10 +50,23 @@ def upload():
 
 @app.route("/sort/", methods=["POST"])
 def sort():
-    sort_req = request.form.get("sortInput")
-    if sort_req is not None:
+    data = request.get_json()
+    sort_order = data.get("sortOrder")
+    folder_creation = data.get("folderCreation")
+    if sort_order is not None:
+        sort_files(sort_order, folder_creation)
+        return jsonify({"status": "success"}), 200
+    return jsonify({"status": "failure"}), 400
+
+
+@app.route("/no_sort/", methods=["POST"])
+def no_sort():
+    data = request.get_json()
+    absolute_file_paths = data.get("absoluteFilePaths")
+    if absolute_file_paths is not None:
         sort_files()
-        return redirect(url_for("main"))
+        return jsonify({"status": "success"}), 200
+    return jsonify({"status": "failure"}), 400
 
 
 @app.route("/check_database/", methods=["GET", "POST"])
