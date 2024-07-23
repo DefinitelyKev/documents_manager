@@ -5,7 +5,6 @@ import os
 from app.utils.utils import *
 from app.utils.db_utils import *
 from app.utils.sort_utils import *
-from app.form import DocumentForm
 from app.models import Document
 from app import app, db
 
